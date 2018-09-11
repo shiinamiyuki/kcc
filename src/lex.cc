@@ -93,7 +93,8 @@ int Lexer::isComment() {
     return 0;
 }
 
-Lexer::Lexer(const std::string &s) {
+Lexer::Lexer(const char * _filename,const std::string &s) {
+    filename = _filename;
     pos = 0;
     source = s;
     line = 1;
@@ -131,7 +132,7 @@ static std::set<char> opChar =
 Token Lexer::next() {
     if (cur() == ';') {
         consume();
-        return Token(Token::Type::Terminator, ";", line, col);
+        return makeToken(Token::Type::Terminator, ";", line, col);
     } else if (isdigit(cur())) { // numbers
         return number();
     } else if (isIden(cur())) {
@@ -184,9 +185,9 @@ Token Lexer::identifier() {
         consume();
     }
     if (isKeyWord(iden))
-        return Token(Token::Type::Keyword, iden, line, col);
+        return makeToken(Token::Type::Keyword, iden, line, col);
     else
-        return Token(Token::Type::Identifier, iden, line, col);
+        return makeToken(Token::Type::Identifier, iden, line, col);
 }
 
 Token Lexer::number() {
@@ -240,7 +241,7 @@ Token Lexer::number() {
             consume();
         }
     }
-    return Token(ty, number, line, col);
+    return makeToken(ty, number, line, col);
 }
 
 Token Lexer::punctuator() {
@@ -253,18 +254,18 @@ Token Lexer::punctuator() {
     //std::cout << s1 << " " << s2 << " " << s3 << " " << std::endl;
     //system("pause");
     if (operators[0].find(s3) != operators[0].end()) {
-        Token t(Token::Type::Punctuator, s3, line, col);
+        auto t = makeToken(Token::Type::Punctuator, s3, line, col);
         consume();
         consume();
         consume();
         return t;
     } else if (operators[1].find(s2) != operators[1].end()) {
-        Token t(Token::Type::Punctuator, s2, line, col);
+        auto t = makeToken(Token::Type::Punctuator, s2, line, col);
         consume();
         consume();
         return t;
     } else if (operators[2].find(s1) != operators[2].end()) {
-        Token t(Token::Type::Punctuator, s1, line, col);
+        auto t = makeToken(Token::Type::Punctuator, s1, line, col);
         consume();
         return t;
     } else {
@@ -298,10 +299,10 @@ Token Lexer::string() {
     if(s[0] == '\'' ){
         if(s.length()!=3)
             throw std::runtime_error(std::string("char literal to long"));
-        return Token(Token::Type::Int,format("{}",(int)s[1]),line, col);
+        return makeToken(Token::Type::Int,format("{}",(int)s[1]),line, col);
     }
 
-    return Token(Token::Type::String, s, line, col);
+    return makeToken(Token::Type::String, s, line, col);
 }
 
 std::vector<Token> &Lexer::getTokenStream() {

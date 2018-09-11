@@ -7,6 +7,7 @@
 
 #include "lex.h"
 #include "parse.h"
+#include "sema.h"
 namespace  kcc{
     class Compiler{
     public:

@@ -11,13 +11,17 @@ void kcc::Compiler::compileFile(const char *filename) {
         fprintln(stderr,"{} does not exist",filename);
     }
     while(!feof(f)){
-        src += (char)fgetc(f);
+        char c = (char)fgetc(f);
+        if(c!=EOF&&c)
+        src += c;
     }
     println("{}",src);
-    Lexer lex(src);
+    Lexer lex(filename,src);
     lex.scan();
     Parser p(lex);
     auto ast = p.parse();
     ast->link();
     println("{}",ast->str());
+    Sema sema;
+    ast->accept(&sema);
 }

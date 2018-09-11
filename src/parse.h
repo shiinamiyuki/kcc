@@ -101,7 +101,7 @@ namespace kcc {
         template<typename T, typename... Args>
         T *makeNode(Args... args) {
             auto t = new T(args...);
-            t->pos = SourcePos(peek().line, peek().col);
+            t->pos = SourcePos(peek().filename,peek().line, peek().col);
             return t;
         }
 

@@ -70,7 +70,7 @@ namespace kcc {
 
         unsigned int getTypeSize(Type *);
 
-        VarInfo getVarInfo(Identifier*);
+        VarInfo getVarInfo(Identifier *);
 
         template<typename... Args>
         void error(AST *ast, const char *message, Args... args) {
@@ -81,6 +81,14 @@ namespace kcc {
         void warning(AST *ast, const char *message, Args... args) {
             fprintln(stderr, "{}: warning: {}", ast->getPos(), format(message, args...));
         }
+        bool isArithmetic(Type * ty);
+        bool isInt(Type *);
+
+        bool isFloat(Type *);
+
+        bool isPointer(Type *);
+
+        std::string getTypeRepr(Type *)const;
 
     public:
         Sema();

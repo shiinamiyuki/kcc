@@ -19,12 +19,13 @@ namespace  kcc {
     struct SourcePos {
         int line;
         int col;
-
+        const char *filename;
         SourcePos() = default;
 
-        SourcePos(int a, int b) {
+        SourcePos(const char *_filename,int a, int b) {
             line = a;
             col = b;
+            filename = _filename;
         }
     };
 
@@ -35,6 +36,9 @@ namespace  kcc {
         int addr;
         int reg;
         bool isGlobal;
+        Record(){
+            type = nullptr;
+        }
     };
 
     class AST {
@@ -126,7 +130,7 @@ namespace  kcc {
         const std::string &tok() const { return getToken().tok; }
 
         std::string getPos()const{
-            return format("{}:{}:{}",getToken().filename,getToken().line,getToken().col);
+            return format("{}:{}:{}",pos.filename,pos.line,pos.col);
         }
     };
 
@@ -242,6 +246,7 @@ namespace  kcc {
         virtual bool isArray() const { return false; }
 
         virtual bool isPointer() const { return false; }
+        virtual std::string repr()const{return std::string();}
     };
 
     class PrimitiveType : public Type {
@@ -253,6 +258,7 @@ namespace  kcc {
         void accept(Visitor *) override;
 
         bool isPrimitive() const override { return true; }
+        std::string repr()const{return tok();}
     };
 
     class PointerType : public Type {
@@ -264,6 +270,7 @@ namespace  kcc {
         void accept(Visitor *) override;
 
         bool isPointer() const override { return true; }
+        std::string repr()const{return ((Type*)first())->repr().append("*");}
     };
 
     class ArrayType : public Type {

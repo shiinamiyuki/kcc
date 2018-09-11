@@ -3,7 +3,7 @@
 //
 
 #include "sema.h"
-
+using namespace kcc;
 void kcc::Sema::visit(For *aFor) {
 
 }
@@ -111,13 +111,53 @@ void kcc::Sema::visit(DeclarationList *list) {
 void kcc::Sema::visit(Literal *literal) {
 
 }
+static bool skipCheckIfNull(kcc::BinaryExpression * expr,kcc::Type *ty1,kcc::Type *ty2){
+    if(!ty1 || !ty2){
+        expr->setType(nullptr);
+        return true;
+    }else{
+        return false;
+    }
+}
 
 void kcc::Sema::visit(BinaryExpression *expression) {
     expression->lhs()->accept(this);
     expression->rhs()->accept(this);
-    auto ty1 = expression->getType();
-    auto ty2 = expression->getType();
+    auto ty1 = expression->lhs()->getType();
+    auto ty2 = expression->rhs()->getType();
+    if(skipCheckIfNull(expression,ty1,ty2))
+        return;
     const auto& op = expression->tok();
+    if(op == "+"){
+        if(isPointer(ty1)){
+            if(!isInt(ty2)){
+                error(expression,"invalid pointer arithmetic with {} and {}",
+                        getTypeRepr(ty1),
+                        getTypeRepr(ty2));
+                expression->setType(nullptr);
+            }else{
+                expression->setType(ty1);
+            }
+        }
+        else if(isPointer(ty2)){
+            if(!isInt(ty1)){
+                error(expression,"invalid pointer arithmetic with {} and {}",
+                      getTypeRepr(ty1),
+                      getTypeRepr(ty2));
+                expression->setType(nullptr);
+            }else{
+                expression->setType(ty2);
+            }
+        }else if(isArithmetic(ty1)&&isArithmetic(ty2)){
+            if(isInt(ty1)&&isInt(ty2)){
+                expression->setType(ty1);
+            }else{
+                expression->setType(isFloat(ty1)?ty1:ty2);
+            }
+        }
+    }else if(op == "-"){
+        
+    }
 }
 
 void kcc::Sema::visit(UnaryExpression *expression) {
@@ -192,4 +232,24 @@ kcc::VarInfo kcc::Sema::getVarInfo(Identifier * iden) {
     }
     error(iden,"undeclared variable {}",s);
     return VarInfo();
+}
+
+bool kcc::Sema::isInt(kcc::Type *ty) {
+    return ty->isPrimitive() && ty->tok() == "int";
+}
+
+bool kcc::Sema::isFloat(kcc::Type *ty) {
+    return ty->isPrimitive() && ty->tok() == "float";
+}
+
+bool kcc::Sema::isPointer(kcc::Type *ty) {
+    return ty->isPointer();
+}
+
+std::string kcc::Sema::getTypeRepr(kcc::Type *ty) const {
+    return ty->repr();
+}
+
+bool Sema::isArithmetic(Type *ty) {
+    return isInt(ty) || isFloat(ty);
 }

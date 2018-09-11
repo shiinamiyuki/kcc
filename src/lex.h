@@ -16,7 +16,7 @@ namespace  kcc {
 			String, Int,Float, Identifier, Keyword, Punctuator, Terminator, Nil
 		} type;
 		std::string tok;
-		char *filename;
+		const char *filename;
 		int line;
 		int col;
 
@@ -31,6 +31,7 @@ namespace  kcc {
 	class Lexer {
 		int pos;
 		int line, col;
+		const char *filename;
 		std::string source;
 		std::vector<Token> tokenStream;
 
@@ -61,9 +62,14 @@ namespace  kcc {
 		Token punctuator();
 
 		Token string();
-
+		template<typename... Args>
+        Token  makeToken(Args... args){
+            auto t = Token(args...);
+            t.filename = filename;
+            return t;
+        }
 	public:
-		Lexer(const std::string &s);
+		Lexer(const char *filename,const std::string &s);
 
 		void scan();
 
