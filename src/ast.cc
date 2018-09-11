@@ -33,7 +33,7 @@ void kcc::AST::link() {
 }
 
 std::string kcc::AST::info() const {
-    return format("{}[{}]\n", type(), content.tok);
+    return format("{}[{}]\n", kind(), content.tok);
 }
 
 void kcc::AST::accept(kcc::Visitor *) {}
@@ -52,7 +52,7 @@ std::string kcc::AST::str(int depth) const {
 }
 
 std::string kcc::ArrayType::info() const {
-    return format("{}[{}]\n", type(), arrSize);
+    return format("{}[{}]\n", kind(), arrSize);
 }
 
 const char *printstr(kcc::AST *ast) {

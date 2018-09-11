@@ -10,7 +10,7 @@
 
 #include "kcc.h"
 #include "lex.h"
-
+#include "format.h"
 namespace  kcc {
     struct Token;
 
@@ -47,6 +47,12 @@ namespace  kcc {
         virtual void linkRec();
 
     public:
+        void setType(Type *ty){
+            record.type = ty;
+        }
+        Type * getType()const{
+            return record.type;
+        }
         SourcePos pos;
 
         AST();
@@ -59,7 +65,7 @@ namespace  kcc {
 
         virtual std::string info() const;
 
-        virtual const std::string type() const { return std::string(); };
+        virtual const std::string kind() const { return std::string(); };
 
         inline AST *first()const {
             return children.at(0);
@@ -118,6 +124,10 @@ namespace  kcc {
         AST *getParent() const { return parent; }
 
         const std::string &tok() const { return getToken().tok; }
+
+        std::string getPos()const{
+            return format("{}:{}:{}",getToken().filename,getToken().line,getToken().col);
+        }
     };
 
     const char *printstr(AST *ast);
@@ -128,7 +138,7 @@ namespace  kcc {
 
         BinaryExpression() = default;
 
-        const std::string type() const override { return "BinaryExpression"; }
+        const std::string kind() const override { return "BinaryExpression"; }
 
         void accept(Visitor *) override;
         AST * lhs()const{return first();}
@@ -141,7 +151,7 @@ namespace  kcc {
 
         PostfixExpr() = default;
 
-        const std::string type() const override { return "PostfixExpr"; }
+        const std::string kind() const override { return "PostfixExpr"; }
 
         void accept(Visitor *) override;
     };
@@ -152,7 +162,7 @@ namespace  kcc {
 
         UnaryExpression() = default;
 
-        const std::string type() const override { return "UnaryExpression"; }
+        const std::string kind() const override { return "UnaryExpression"; }
 
         void accept(Visitor *) override;
     };
@@ -161,7 +171,7 @@ namespace  kcc {
     public:
         TernaryExpression() = default;
 
-        const std::string type() const override { return "TernaryExpression"; }
+        const std::string kind() const override { return "TernaryExpression"; }
 
         void accept(Visitor *) override;
     };
@@ -172,7 +182,7 @@ namespace  kcc {
 
         explicit Identifier(const Token &t) { content = t; }
 
-        const std::string type() const override { return "Identifier"; }
+        const std::string kind() const override { return "Identifier"; }
 
         void accept(Visitor *) override;
     };
@@ -181,7 +191,7 @@ namespace  kcc {
     public:
         explicit Number(const Token &t) { content = t; }
 
-        const std::string type() const override { return "Number"; }
+        const std::string kind() const override { return "Number"; }
 
         void accept(Visitor *) override;
     };
@@ -190,7 +200,7 @@ namespace  kcc {
     public:
         explicit Literal(const Token &t) { content = t; }
 
-        const std::string type() const override { return "Literal"; }
+        const std::string kind() const override { return "Literal"; }
 
         void accept(Visitor *) override;
     };
@@ -199,28 +209,28 @@ namespace  kcc {
     public:
         CastExpression() = default;
 
-        const std::string type() const override { return "CastExpression"; }
+        const std::string kind() const override { return "CastExpression"; }
 
         void accept(Visitor *) override;
     };
 
     class IndexExpression : public AST {
     public:
-        const std::string type() const override { return "IndexExpression"; }
+        const std::string kind() const override { return "IndexExpression"; }
 
         void accept(Visitor *) override;
     };
 
     class CallExpression : public AST {
     public:
-        const std::string type() const override { return "CallExpression"; }
+        const std::string kind() const override { return "CallExpression"; }
 
         void accept(Visitor *) override;
     };
 
     class ArgumentExepressionList : public AST {
     public:
-        const std::string type() const override { return "ArgumentExepressionList"; }
+        const std::string kind() const override { return "ArgumentExepressionList"; }
 
         void accept(Visitor *) override;
     };
@@ -238,7 +248,7 @@ namespace  kcc {
     public:
         explicit PrimitiveType(const Token &t) { content = t; }
 
-        const std::string type() const override { return "PrimitiveType"; }
+        const std::string kind() const override { return "PrimitiveType"; }
 
         void accept(Visitor *) override;
 
@@ -249,7 +259,7 @@ namespace  kcc {
     public:
         explicit PointerType() {}
 
-        const std::string type() const override { return "PointerType"; }
+        const std::string kind() const override { return "PointerType"; }
 
         void accept(Visitor *) override;
 
@@ -263,7 +273,7 @@ namespace  kcc {
             arrSize = size;
         }
 
-        const std::string type() const override { return "ArrayType"; }
+        const std::string kind() const override { return "ArrayType"; }
 
         std::string info() const override;
 
@@ -274,7 +284,7 @@ namespace  kcc {
     public:
         explicit FuncType() {}
 
-        const std::string type() const override { return "FuncType"; }
+        const std::string kind() const override { return "FuncType"; }
 
         void accept(Visitor *) override;
     };
@@ -283,56 +293,59 @@ namespace  kcc {
     public:
         explicit FuncArgType() {}
 
-        const std::string type() const override { return "FuncArgType"; }
+        const std::string kind() const override { return "FuncArgType"; }
 
         void accept(Visitor *) override;
     };
 
     class While : public AST {
     public:
-        const std::string type() const override { return "While"; }
+        const std::string kind() const override { return "While"; }
 
         void accept(Visitor *) override;
     };
 
     class If : public AST {
     public:
-        const std::string type() const override { return "If"; }
+        const std::string kind() const override { return "If"; }
 
         void accept(Visitor *) override;
     };
 
     class Block : public AST {
     public:
-        const std::string type() const override { return "Block"; }
+        const std::string kind() const override { return "Block"; }
 
         void accept(Visitor *) override;
     };
 
     class TopLevel : public AST {
     public:
-        const std::string type() const override { return "TopLevel"; }
+        const std::string kind() const override { return "TopLevel"; }
 
         void accept(Visitor *) override;
     };
 
     class DeclarationList : public AST {
     public:
-        const std::string type() const override { return "DeclarationList"; }
+        const std::string kind() const override { return "DeclarationList"; }
 
         void accept(Visitor *) override;
     };
 
     class Declaration : public AST {
     public:
-        const std::string type() const override { return "Declaration"; }
+        const std::string kind() const override { return "Declaration"; }
 
         void accept(Visitor *) override;
+        Type * type()const{return (Type*)first();}
+        Identifier * identifier()const{return (Identifier*)second();}
+
     };
 
     class FuncDefArg : public AST {
     public:
-        const std::string type() const override { return "FuncDefArg"; }
+        const std::string kind() const override { return "FuncDefArg"; }
 
         void accept(Visitor *) override;
 
@@ -341,7 +354,7 @@ namespace  kcc {
 
     class FuncDef : public AST {
     public:
-        const std::string type() const override { return "FuncDef"; }
+        const std::string kind() const override { return "FuncDef"; }
 
         void accept(Visitor *) override;
 
@@ -357,28 +370,28 @@ namespace  kcc {
 
     class Return : public AST {
     public:
-        const std::string type() const override { return "Return"; }
+        const std::string kind() const override { return "Return"; }
 
         void accept(Visitor *) override;
     };
 
     class For : public AST {
     public:
-        const std::string type() const override { return "For"; }
+        const std::string kind() const override { return "For"; }
 
         void accept(Visitor *) override;
     };
 
     class Empty : public AST {
     public:
-        const std::string type() const override { return "Empty"; }
+        const std::string kind() const override { return "Empty"; }
 
         void accept(Visitor *) override;
     };
 
     class Enum : public AST {
     public:
-        const std::string type() const override { return "Enum"; }
+        const std::string kind() const override { return "Enum"; }
 
         void accept(Visitor *) override;
     };

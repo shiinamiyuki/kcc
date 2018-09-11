@@ -6,42 +6,89 @@
 #define KCC_SEMA_H
 
 #include "visitor.h"
-namespace  kcc {
-    struct VarInfo{
-        Type * ty;
+#include "type.h"
+#include "format.h"
+
+#define KCC_POINTER_SIZE 8u
+namespace kcc {
+    struct VarInfo {
+        Type *ty;
         int addr;
         bool isGlobal;
         bool isTypedef;
-        VarInfo(){
+
+        VarInfo() {
             ty = nullptr;
             addr = false;
             isGlobal = false;
             isTypedef = false;
         }
-        VarInfo(Type * _ty,int _addr,bool _isGlobal,bool _isTypedef = false){
+
+        VarInfo(Type *_ty, int _addr, bool _isGlobal, bool _isTypedef = false) {
             ty = _ty;
             addr = _addr;
             isGlobal = _isGlobal;
             isTypedef = _isTypedef;
         }
     };
-    struct Scope: public std::unordered_map<std::string,VarInfo>{
+
+    struct Scope : public std::unordered_map<std::string, VarInfo> {
 
     };
-    struct SymbolTable : public std::vector<Scope>{
+    struct SymbolTable : public std::vector<Scope> {
 
     };
+
+    struct StackFrame {
+        unsigned int bytesAllocated;
+
+        void reset() {
+            bytesAllocated = 0;
+        }
+
+        void add(unsigned int k) {
+            bytesAllocated += k;
+        }
+
+    };
+
     class Sema : public Visitor {
         SymbolTable symbolTable;
-        void pushScope(){
+
+        void pushScope() {
             symbolTable.emplace_back(Scope());
         }
-        void popScope(){
+
+        void popScope() {
             symbolTable.pop_back();
         }
+
+        StackFrame stackFrame;
+        std::unordered_map<std::string, unsigned int> typeSize;
+
+        void addTypeSize(const std::string &, unsigned int);
+
+        unsigned int getTypeSize(Type *);
+
+        VarInfo getVarInfo(Identifier*);
+
+        template<typename... Args>
+        void error(AST *ast, const char *message, Args... args) {
+            fprintln(stderr, "{}: error: {}", ast->getPos(), format(message, args...));
+        }
+
+        template<typename... Args>
+        void warning(AST *ast, const char *message, Args... args) {
+            fprintln(stderr, "{}: warning: {}", ast->getPos(), format(message, args...));
+        }
+
     public:
         Sema();
-        void addGlobalSymbol(const std::string&,Type*);
+
+        void addGlobalSymbol(const std::string &, Type *);
+
+        void addSymbol(const std::string &, Type *, bool isTypedef = false);
+
         void visit(For *aFor) override;
 
         void visit(Identifier *identifier) override;

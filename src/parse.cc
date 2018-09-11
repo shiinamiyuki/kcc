@@ -234,7 +234,7 @@ AST *Parser::parseTernary(AST *cond) {
 }
 
 AST *Parser::parseCastExpr() {
-    if (has("(") && types.find(at(pos + 2).tok) != types.end()) {  //( type ) cast_expr
+    if (has("(") && types.find(at(pos + 2).tok) != types.end()) {  //( kind ) cast_expr
         consume();
         auto cast = makeNode<CastExpression>();
         cast->add(parseTypeName());
@@ -377,7 +377,7 @@ AST *Parser::parseReturn() {
 
 
 /*  Simplifier declaration
- *  declaration: type-specifier direct-declarator
+ *  declaration: kind-specifier direct-declarator
  *  declarator: {pointer}  direct-declarator
  *  direct-declarator: direct-declarator' {   array-declarator | function-declarator }
  *  direct-declarator': identifier | '('  declarator ')'
@@ -398,7 +398,7 @@ AST *Parser::parseGlobalDefs() {
         return parseEnum();
     } else {
         auto result = parseDecl();
-        if (result->type() != FuncDef().type()) {
+        if (result->kind() != FuncDef().kind()) {
             expect(";");
         }
         return result;
@@ -432,7 +432,7 @@ AST *Parser::parseDecl() {
 AST *Parser::convertFuncTypetoFuncDef(AST *decl) {
     auto func = makeNode<FuncDef>();
     auto functype = decl->first();
-    if (functype->type() != FuncType().type()) {
+    if (functype->kind() != FuncType().kind()) {
         error("function expected");
     }
     func->add(functype->first());
@@ -541,7 +541,7 @@ void Parser::parseArrayDeclarator() {
     ArrayType *arr;
     if (!has("]")) {
         auto size = parsePrimary();
-        if (size->type() != "Number") {
+        if (size->kind() != "Number") {
             error("integer expected in array declaration");
         }
         int i;
@@ -579,7 +579,7 @@ void Parser::parseDirectDeclarator_() {
         expect(")");
     } else if (peek().type == Token::Type::Identifier) {
         auto iden = parsePrimary();
-        if (iden->type() != "Identifier") {
+        if (iden->kind() != "Identifier") {
             error("identifier expected in direct declarator");
         }
         declStack.emplace_back(iden);
@@ -597,14 +597,14 @@ AST* Parser::error(const std::string &message) {
 
 AST *Parser::extractIdentifier(AST *ast) {
     AST *ty = declStack.back();
-    if (ast->type() == "Identifier") {
+    if (ast->kind() == "Identifier") {
         auto decl = makeNode<Declaration>();
         decl->add(ty);
         decl->add(ast);
         return decl;
     } else {
         AST *walker = ast;
-        while (walker->size() && (walker->first()->type() != "Identifier")) {
+        while (walker->size() && (walker->first()->kind() != "Identifier")) {
             walker = walker->first();
         }
         auto iden = walker->first();
