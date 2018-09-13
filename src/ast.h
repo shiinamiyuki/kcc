@@ -57,7 +57,9 @@ namespace kcc {
         void setType(Type *ty) {
             record.type = ty;
         }
-
+        void setAddr(int a){
+            record.addr = a;
+        }
         Type *getType() const {
             return record.type;
         }

@@ -13,6 +13,7 @@ void kcc::Sema::visit(For *aFor) {
 void kcc::Sema::visit(Identifier *identifier) {
     auto info = getVarInfo(identifier);
     identifier->setType(info.ty);
+    identifier->setAddr(info.addr);
 }
 
 void kcc::Sema::visit(While *aWhile) {
@@ -109,13 +110,27 @@ void kcc::Sema::visit(CallExpression *expression) {
     auto f = (FuncType *) ty;
     auto ret = f->ret();
     auto arg = f->arg();
-    for (int i = 0; i < expression->arg()->size(); i++) {
-        auto t = expression->get(i)->getType();
+    if(expression->arg()->size()!=arg->size()){
+        error(expression,"expecting {} arguments but found {}",
+                arg->size(),
+                expression->arg()->size());
+        expression->setType(nullptr);
+    }
+    for (int i = 0; i < expression->arg()->size() && i < arg->size(); i++) {
+        auto t = expression->arg()->get(i)->getType();
         if (!t) {
+
             expression->setType(nullptr);
             return;
         }
-
+        if(!isSameType(t,(Type*)arg->get(i))){
+            error(expression,"expecting type '{}' at {}th argument but found '{}'",
+                    getTypeRepr((Type*)arg->get(i)),
+                    i + 1,
+                    getTypeRepr(t));
+            expression->setType(nullptr);
+            return;
+        }
     }
     expression->setType(ret);
 }
@@ -307,6 +322,7 @@ kcc::Sema::Sema() {
 void kcc::Sema::addSymbol(const std::string &v, kcc::Type *ty, bool isTypedef) {
     auto sz = getTypeSize(ty);
     VarInfo var(ty, stackFrame.bytesAllocated, false, isTypedef);
+  //  println("symbol '{}' added, at offset {}",v,(int)stackFrame.bytesAllocated);
     symbolTable.back()[v] = var;
     stackFrame.add(sz);
 }
@@ -380,3 +396,4 @@ bool Sema::isSameType(Type *ty1, Type *ty2) {
         }
     }
 }
+

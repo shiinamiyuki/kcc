@@ -81,16 +81,22 @@ namespace kcc {
         void warning(AST *ast, const char *message, Args... args) {
             fprintln(stderr, "{}: warning: {}", ast->getPos(), format(message, args...));
         }
-        bool isArithmetic(Type * ty);
+
+        bool isArithmetic(Type *ty);
+
         bool isInt(Type *);
 
         bool isFloat(Type *);
 
         bool isPointer(Type *);
-        bool isSameType(Type *,Type*);
-        std::string getTypeRepr(Type *)const;
-        void binaryExpressionAutoPromote(BinaryExpression*,Type*,Type*,bool intOnly=false,
-                bool retInt=false);
+
+        bool isSameType(Type *, Type *);
+
+        std::string getTypeRepr(Type *) const;
+
+        void binaryExpressionAutoPromote(BinaryExpression *, Type *, Type *, bool intOnly = false,
+                                         bool retInt = false);
+
     public:
         Sema();
 
