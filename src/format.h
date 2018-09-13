@@ -73,13 +73,13 @@ void println(const std::string& fmt);
 template< typename... Args>
 void println(const char *fmt, Args... a) {
     auto str = format(fmt, a...);
-    printf(str.c_str());
+    printf("%s",str.c_str());
     putchar('\n');
 }
 template< typename... Args>
 void fprintln(FILE*f,const char *fmt, Args... a) {
     auto str = format(fmt, a...);
-    fprintf(f,str.c_str());
+    fprintf(f,"%s",str.c_str());
     fputc('\n',f);
 }
 #endif //RMCC_PRINTLN_H

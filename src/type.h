@@ -8,5 +8,6 @@
 #include "ast.h"
 namespace kcc{
     PrimitiveType * makePrimitiveType(const std::string& );
+    PointerType * makePointerType(Type * );
 }
 #endif //KCC_TYPE_H

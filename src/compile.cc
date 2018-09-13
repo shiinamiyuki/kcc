@@ -3,25 +3,26 @@
 //
 
 #include "compile.h"
+
 using namespace kcc;
+
 void kcc::Compiler::compileFile(const char *filename) {
     std::string src;
-    FILE * f = fopen(filename,"r");
-    if(!f){
-        fprintln(stderr,"{} does not exist",filename);
+    FILE *f = fopen(filename, "r");
+    if (!f) {
+        fprintln(stderr, "{} does not exist", filename);
     }
-    while(!feof(f)){
-        char c = (char)fgetc(f);
-        if(c!=EOF&&c)
-        src += c;
+    while (!feof(f)) {
+        char c = (char) fgetc(f);
+        if (c != EOF && c)
+            src += c;
     }
-    println("{}",src);
-    Lexer lex(filename,src);
+    Lexer lex(filename, src);
     lex.scan();
     Parser p(lex);
     auto ast = p.parse();
     ast->link();
-    println("{}",ast->str());
+   // println("{}", ast->str());
     Sema sema;
     ast->accept(&sema);
 }

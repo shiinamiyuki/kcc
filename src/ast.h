@@ -11,7 +11,8 @@
 #include "kcc.h"
 #include "lex.h"
 #include "format.h"
-namespace  kcc {
+
+namespace kcc {
     struct Token;
 
     class Visitor;
@@ -20,9 +21,10 @@ namespace  kcc {
         int line;
         int col;
         const char *filename;
+
         SourcePos() = default;
 
-        SourcePos(const char *_filename,int a, int b) {
+        SourcePos(const char *_filename, int a, int b) {
             line = a;
             col = b;
             filename = _filename;
@@ -36,7 +38,8 @@ namespace  kcc {
         int addr;
         int reg;
         bool isGlobal;
-        Record(){
+
+        Record() {
             type = nullptr;
         }
     };
@@ -51,12 +54,14 @@ namespace  kcc {
         virtual void linkRec();
 
     public:
-        void setType(Type *ty){
+        void setType(Type *ty) {
             record.type = ty;
         }
-        Type * getType()const{
+
+        Type *getType() const {
             return record.type;
         }
+
         SourcePos pos;
 
         AST();
@@ -71,19 +76,19 @@ namespace  kcc {
 
         virtual const std::string kind() const { return std::string(); };
 
-        inline AST *first()const {
+        inline AST *first() const {
             return children.at(0);
         }
 
-        inline AST *second()const {
+        inline AST *second() const {
             return children.at(1);
         }
 
-        inline AST *third()const {
+        inline AST *third() const {
             return children.at(2);
         }
 
-        inline AST *forth()const {
+        inline AST *forth() const {
             return children.at(3);
         }
 
@@ -91,7 +96,7 @@ namespace  kcc {
             children.push_back(t);
         }
 
-        inline int size()const {
+        inline int size() const {
             return children.size();
         }
 
@@ -119,6 +124,10 @@ namespace  kcc {
             children[i] = ast;
         }
 
+        AST *get(int i) {
+            return children.at(i);
+        }
+
         virtual ~AST();
 
         virtual void accept(Visitor *vis);
@@ -129,8 +138,8 @@ namespace  kcc {
 
         const std::string &tok() const { return getToken().tok; }
 
-        std::string getPos()const{
-            return format("{}:{}:{}",pos.filename,pos.line,pos.col);
+        std::string getPos() const {
+            return format("{}:{}:{}", pos.filename, pos.line, pos.col);
         }
     };
 
@@ -145,8 +154,10 @@ namespace  kcc {
         const std::string kind() const override { return "BinaryExpression"; }
 
         void accept(Visitor *) override;
-        AST * lhs()const{return first();}
-        AST * rhs()const{return second();}
+
+        AST *lhs() const { return first(); }
+
+        AST *rhs() const { return second(); }
     };
 
     class PostfixExpr : public AST {
@@ -169,6 +180,8 @@ namespace  kcc {
         const std::string kind() const override { return "UnaryExpression"; }
 
         void accept(Visitor *) override;
+
+        AST *expr() const { return first(); }
     };
 
     class TernaryExpression : public AST {
@@ -225,11 +238,17 @@ namespace  kcc {
         void accept(Visitor *) override;
     };
 
+    class ArgumentExepressionList;
+
     class CallExpression : public AST {
     public:
         const std::string kind() const override { return "CallExpression"; }
 
         void accept(Visitor *) override;
+
+        AST *callee() const { return first(); }
+
+        ArgumentExepressionList *arg() const { return (ArgumentExepressionList *) second(); }
     };
 
     class ArgumentExepressionList : public AST {
@@ -246,7 +265,8 @@ namespace  kcc {
         virtual bool isArray() const { return false; }
 
         virtual bool isPointer() const { return false; }
-        virtual std::string repr()const{return std::string();}
+
+        virtual std::string repr() const { return std::string(); }
     };
 
     class PrimitiveType : public Type {
@@ -258,7 +278,8 @@ namespace  kcc {
         void accept(Visitor *) override;
 
         bool isPrimitive() const override { return true; }
-        std::string repr()const{return tok();}
+
+        std::string repr() const { return tok(); }
     };
 
     class PointerType : public Type {
@@ -270,7 +291,10 @@ namespace  kcc {
         void accept(Visitor *) override;
 
         bool isPointer() const override { return true; }
-        std::string repr()const{return ((Type*)first())->repr().append("*");}
+
+        Type *ptrTo() const { return (Type *) first(); }
+
+        std::string repr() const { return ((Type *) first())->repr().append("*"); }
     };
 
     class ArrayType : public Type {
@@ -287,6 +311,8 @@ namespace  kcc {
         void accept(Visitor *) override;
     };
 
+    class FuncArgType;
+
     class FuncType : public Type {
     public:
         explicit FuncType() {}
@@ -294,6 +320,10 @@ namespace  kcc {
         const std::string kind() const override { return "FuncType"; }
 
         void accept(Visitor *) override;
+
+        Type *ret() const { return (Type *) first(); }
+
+        FuncArgType *arg() const { return (FuncArgType *) second(); }
     };
 
     class FuncArgType : public Type {
@@ -303,6 +333,8 @@ namespace  kcc {
         const std::string kind() const override { return "FuncArgType"; }
 
         void accept(Visitor *) override;
+
+
     };
 
     class While : public AST {
@@ -310,6 +342,10 @@ namespace  kcc {
         const std::string kind() const override { return "While"; }
 
         void accept(Visitor *) override;
+
+        AST *cond() const { return first(); }
+
+        AST *body() const { return second(); }
     };
 
     class If : public AST {
@@ -317,6 +353,12 @@ namespace  kcc {
         const std::string kind() const override { return "If"; }
 
         void accept(Visitor *) override;
+
+        AST *cond() const { return first(); }
+
+        AST *body() const { return second(); }
+
+        AST* elsePart()const{return third();}
     };
 
     class Block : public AST {
@@ -345,8 +387,10 @@ namespace  kcc {
         const std::string kind() const override { return "Declaration"; }
 
         void accept(Visitor *) override;
-        Type * type()const{return (Type*)first();}
-        Identifier * identifier()const{return (Identifier*)second();}
+
+        Type *type() const { return (Type *) first(); }
+
+        Identifier *identifier() const { return (Identifier *) second(); }
 
     };
 
@@ -366,12 +410,15 @@ namespace  kcc {
         void accept(Visitor *) override;
 
         FuncType *extractCallSignature();
-        const std::string& name()const{return second()->tok();}
-        FuncDefArg * arg()const{
-            return (FuncDefArg*)third();
+
+        const std::string &name() const { return second()->tok(); }
+
+        FuncDefArg *arg() const {
+            return (FuncDefArg *) third();
         }
-        Block * block()const{
-            return (Block*)forth();
+
+        Block *block() const {
+            return (Block *) forth();
         }
     };
 
@@ -387,6 +434,14 @@ namespace  kcc {
         const std::string kind() const override { return "For"; }
 
         void accept(Visitor *) override;
+
+        AST *init() const { return first(); }
+
+        AST *cond() const { return second(); }
+
+        AST *step() const { return third(); }
+
+        AST *body() const { return forth(); }
     };
 
     class Empty : public AST {

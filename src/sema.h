@@ -87,9 +87,10 @@ namespace kcc {
         bool isFloat(Type *);
 
         bool isPointer(Type *);
-
+        bool isSameType(Type *,Type*);
         std::string getTypeRepr(Type *)const;
-
+        void binaryExpressionAutoPromote(BinaryExpression*,Type*,Type*,bool intOnly=false,
+                bool retInt=false);
     public:
         Sema();
 

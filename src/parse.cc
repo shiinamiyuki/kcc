@@ -517,7 +517,7 @@ void Parser::parseDeclarator() {
             p2->add(p);
             p = p2;
         }
-        parseDirectDeclarator();
+
         auto t = declStack.back();
         declStack.pop_back();
         auto ptr = p;
@@ -530,6 +530,7 @@ void Parser::parseDeclarator() {
             }
         }
         declStack.emplace_back(p);
+        parseDirectDeclarator();
     } else {
         parseDirectDeclarator();
     }
@@ -563,11 +564,12 @@ void Parser::parseArrayDeclarator() {
 }
 
 void Parser::parseFunctionDeclarator() {
-    auto arg = parseFuncDefArg();
+
     auto func = makeNode<FuncType>();
     auto t = declStack.back();
     declStack.pop_back();
     func->add(t);
+    auto arg = parseFuncDefArg();
     func->add(arg);
     declStack.emplace_back(func);
 }
