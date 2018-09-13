@@ -83,7 +83,7 @@ void kcc::Sema::visit(ArgumentExepressionList *list) {
 }
 
 void kcc::Sema::visit(FuncDefArg *arg) {
-    for(auto i:*arg){
+    for (auto i:*arg) {
         i->accept(this);
     }
 }
@@ -110,10 +110,10 @@ void kcc::Sema::visit(CallExpression *expression) {
     auto f = (FuncType *) ty;
     auto ret = f->ret();
     auto arg = f->arg();
-    if(expression->arg()->size()!=arg->size()){
-        error(expression,"expecting {} arguments but found {}",
-                arg->size(),
-                expression->arg()->size());
+    if (expression->arg()->size() != arg->size()) {
+        error(expression, "expecting {} arguments but found {}",
+              arg->size(),
+              expression->arg()->size());
         expression->setType(nullptr);
     }
     for (int i = 0; i < expression->arg()->size() && i < arg->size(); i++) {
@@ -123,11 +123,11 @@ void kcc::Sema::visit(CallExpression *expression) {
             expression->setType(nullptr);
             return;
         }
-        if(!isSameType(t,(Type*)arg->get(i))){
-            error(expression,"expecting type '{}' at {}th argument but found '{}'",
-                    getTypeRepr((Type*)arg->get(i)),
-                    i + 1,
-                    getTypeRepr(t));
+        if (!isSameType(t, (Type *) arg->get(i))) {
+            error(expression, "expecting type '{}' at {}th argument but found '{}'",
+                  getTypeRepr((Type *) arg->get(i)),
+                  i + 1,
+                  getTypeRepr(t));
             expression->setType(nullptr);
             return;
         }
@@ -136,6 +136,21 @@ void kcc::Sema::visit(CallExpression *expression) {
 }
 
 void kcc::Sema::visit(CastExpression *expression) {
+    expression->second()->accept(this);
+    auto cast = expression->second()->getType();
+    if(!cast) {
+        expression->setType(nullptr);
+        return;
+    }
+
+    auto type = (Type*)expression->first();
+    if(checkTypeCastable(expression,cast,type)){
+        expression->setType(type);
+    }else{
+        error(expression,"cannot cast type from '{}' to '{}'",
+                getTypeRepr(type),
+                getTypeRepr(cast));
+    }
 
 }
 
@@ -175,16 +190,16 @@ void Sema::binaryExpressionAutoPromote(
         bool intOnly,
         bool retInt) {
     auto op = expression->tok();
-    auto err = [&](){
+    auto err = [&]() {
         error(expression, "invalid operands of types '{}' and '{}' to binary operator '{}'",
               getTypeRepr(ty1),
               getTypeRepr(ty2),
               op);
     };
-    if(intOnly){
-        if(isInt(ty1)&&isInt(ty2)){
+    if (intOnly) {
+        if (isInt(ty1) && isInt(ty2)) {
             expression->setType(ty1);
-        }else{
+        } else {
             err();
         }
     }
@@ -192,7 +207,7 @@ void Sema::binaryExpressionAutoPromote(
         if (isInt(ty1) && isInt(ty2)) {
             expression->setType(ty1);
         } else {
-            if(!retInt)
+            if (!retInt)
                 expression->setType(isFloat(ty1) ? ty1 : ty2);
             else
                 expression->setType(isFloat(ty1) ? ty2 : ty1);
@@ -204,11 +219,11 @@ void Sema::binaryExpressionAutoPromote(
 }
 
 void kcc::Sema::visit(BinaryExpression *expression) {
-    static std::set<std::string>intOnly={
-            ">>","<<","%","|","&","^"
+    static std::set<std::string> intOnly = {
+            ">>", "<<", "%", "|", "&", "^"
     };
-    static std::set<std::string>retInt={
-            "&&","||","<",">","<=",">=","!=","=="
+    static std::set<std::string> retInt = {
+            "&&", "||", "<", ">", "<=", ">=", "!=", "=="
     };
 
     expression->lhs()->accept(this);
@@ -218,8 +233,8 @@ void kcc::Sema::visit(BinaryExpression *expression) {
     if (skipCheckIfNull(expression, ty1, ty2))
         return;
     const auto &op = expression->tok();
-    bool a = intOnly.find(op)!= intOnly.end();
-    bool b = retInt.find(op)!=retInt.end();
+    bool a = intOnly.find(op) != intOnly.end();
+    bool b = retInt.find(op) != retInt.end();
     if (op == "+") {
         if (isPointer(ty1)) {
             if (!isInt(ty2)) {
@@ -240,7 +255,7 @@ void kcc::Sema::visit(BinaryExpression *expression) {
                 expression->setType(ty2);
             }
         } else {
-            binaryExpressionAutoPromote(expression, ty1, ty2,a,b);
+            binaryExpressionAutoPromote(expression, ty1, ty2, a, b);
         }
     } else if (op == "-") {
         if (isPointer(ty1) || isPointer(ty2)) {
@@ -253,10 +268,10 @@ void kcc::Sema::visit(BinaryExpression *expression) {
                 expression->setType(nullptr);
             }
         } else {
-            binaryExpressionAutoPromote(expression, ty1, ty2,a,b);
+            binaryExpressionAutoPromote(expression, ty1, ty2, a, b);
         }
     } else {
-        binaryExpressionAutoPromote(expression, ty1, ty2,a,b);
+        binaryExpressionAutoPromote(expression, ty1, ty2, a, b);
     }
 }
 
@@ -275,13 +290,13 @@ void kcc::Sema::visit(UnaryExpression *expression) {
             error(expression, "wrong type argument '{}' to unary '{}'", getTypeRepr(ty), op);
         }
     }
-    if(op == "*"){
-        if(isPointer(ty)){
-            expression->setType((Type*)ty->first());
-        }else{
-            error(expression,"no match for 'operator {}' (operand type is '{}')",
-                    op,
-                    getTypeRepr(ty));
+    if (op == "*") {
+        if (isPointer(ty)) {
+            expression->setType((Type *) ty->first());
+        } else {
+            error(expression, "no match for 'operator {}' (operand type is '{}')",
+                  op,
+                  getTypeRepr(ty));
         }
     }
 }
@@ -322,7 +337,7 @@ kcc::Sema::Sema() {
 void kcc::Sema::addSymbol(const std::string &v, kcc::Type *ty, bool isTypedef) {
     auto sz = getTypeSize(ty);
     VarInfo var(ty, stackFrame.bytesAllocated, false, isTypedef);
-  //  println("symbol '{}' added, at offset {}",v,(int)stackFrame.bytesAllocated);
+    //  println("symbol '{}' added, at offset {}",v,(int)stackFrame.bytesAllocated);
     symbolTable.back()[v] = var;
     stackFrame.add(sz);
 }
@@ -395,5 +410,18 @@ bool Sema::isSameType(Type *ty1, Type *ty2) {
             }
         }
     }
+}
+
+bool Sema::checkTypeCastable(CastExpression* expression,Type *from, Type *to) {
+    if(isSameType(from,to)){
+        return true;
+    }
+    if(isPointer(from) && isInt(to)) {
+        return true;
+    }
+    if(isPointer(to)&&isInt(from)) {
+        return true;
+    }
+    return false;
 }
 

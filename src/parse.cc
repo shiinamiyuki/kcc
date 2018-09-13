@@ -237,8 +237,12 @@ AST *Parser::parseCastExpr() {
     if (has("(") && types.find(at(pos + 2).tok) != types.end()) {  //( kind ) cast_expr
         consume();
         auto cast = makeNode<CastExpression>();
-        cast->add(parseTypeName());
-        while (!has(")"))consume();
+        auto type = parseTypeSpecifier();
+        declStack.emplace_back(type);
+        parseAbstractDeclarator();
+        type = declStack.back();
+        declStack.pop_back();
+        cast->add(type);
         expect(")");
         cast->add(parseCastExpr());
         return cast;
@@ -477,7 +481,7 @@ void Parser::parseAbstractDeclarator() {
                 ptr->add(t);
                 break;
             } else {
-                ptr = static_cast<PointerType *>(ptr->first());
+                ptr = dynamic_cast<PointerType *>(ptr->first());
             }
         }
         declStack.emplace_back(p);
