@@ -9,3 +9,4 @@ Stages: </br>
 4.  SSA-based IR Generation
 5.  Optimizations
 6.  Graph-Coloring Register Allocation
+7.  x64 Assembly Generation
