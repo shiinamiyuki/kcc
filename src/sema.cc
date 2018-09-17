@@ -7,7 +7,10 @@
 using namespace kcc;
 
 void kcc::Sema::visit(For *aFor) {
-
+    aFor->init()->accept(this);
+    aFor->cond()->accept(this);
+    aFor->step()->accept(this);
+    aFor->body()->accept(this);
 }
 
 void kcc::Sema::visit(Identifier *identifier) {
@@ -138,18 +141,18 @@ void kcc::Sema::visit(CallExpression *expression) {
 void kcc::Sema::visit(CastExpression *expression) {
     expression->second()->accept(this);
     auto cast = expression->second()->getType();
-    if(!cast) {
+    if (!cast) {
         expression->setType(nullptr);
         return;
     }
 
-    auto type = (Type*)expression->first();
-    if(checkTypeCastable(expression,cast,type)){
+    auto type = (Type *) expression->first();
+    if (checkTypeCastable(expression, cast, type)) {
         expression->setType(type);
-    }else{
-        error(expression,"cannot cast type from '{}' to '{}'",
-                getTypeRepr(type),
-                getTypeRepr(cast));
+    } else {
+        error(expression, "cannot cast type from '{}' to '{}'",
+              getTypeRepr(type),
+              getTypeRepr(cast));
     }
 
 }
@@ -373,7 +376,9 @@ kcc::VarInfo kcc::Sema::getVarInfo(Identifier *iden) {
 }
 
 bool kcc::Sema::isInt(kcc::Type *ty) {
-    return ty->isPrimitive() && ty->tok() == "int";
+    return ty->isPrimitive() &&
+           (ty->tok() == "int"
+            || ty->tok() == "char");
 }
 
 bool kcc::Sema::isFloat(kcc::Type *ty) {
@@ -397,8 +402,8 @@ bool Sema::isSameType(Type *ty1, Type *ty2) {
     else {
         if (isPointer(ty1) || isPointer(ty2)) {
             if (isPointer(ty2) && isPointer(ty1)) {
-                return isSameType(dynamic_cast<PointerType *>(ty1)->ptrTo(),
-                                  dynamic_cast<PointerType *>(ty2)->ptrTo());
+                return isSameType(removeReference(ty1),
+                                  removeReference(ty2));
             } else {
                 return false;
             }
@@ -412,16 +417,20 @@ bool Sema::isSameType(Type *ty1, Type *ty2) {
     }
 }
 
-bool Sema::checkTypeCastable(CastExpression* expression,Type *from, Type *to) {
-    if(isSameType(from,to)){
+bool Sema::checkTypeCastable(CastExpression *expression, Type *from, Type *to) {
+    if (isSameType(from, to)) {
         return true;
     }
-    if(isPointer(from) && isInt(to)) {
+    if (isPointer(from) && isInt(to)) {
         return true;
     }
-    if(isPointer(to)&&isInt(from)) {
+    if (isPointer(to) && isInt(from)) {
         return true;
     }
     return false;
+}
+
+Type *Sema::removeReference(Type *ty) {
+    return (Type *) ty->first();
 }
 

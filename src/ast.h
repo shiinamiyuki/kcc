@@ -38,7 +38,6 @@ namespace kcc {
         int addr;
         int reg;
         bool isGlobal;
-
         Record() {
             type = nullptr;
         }

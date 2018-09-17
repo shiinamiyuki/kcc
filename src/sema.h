@@ -92,7 +92,10 @@ namespace kcc {
 
         bool isSameType(Type *, Type *);
 
-        bool checkTypeCastable(CastExpression * ,Type *,Type *);
+        bool checkTypeCastable(CastExpression *, Type *, Type *);
+
+        Type *removeReference(Type*);
+
         std::string getTypeRepr(Type *) const;
 
         void binaryExpressionAutoPromote(BinaryExpression *, Type *, Type *, bool intOnly = false,
