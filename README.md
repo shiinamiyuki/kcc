@@ -17,4 +17,4 @@ What's the purpose of this project? </br>
 In brief, to learn optimizing techniques as well as the C11 language.
 
 Why using C++ instead of C? </br>
-Because this is an optimizing compiler, which focus on algorithm rather that the ability of bootstrapping. Another reason is that C++ makes it easier to organize large amount of code, which is crucial, considering this is a one-man project. I don't have much time working on this project so i don't want to waste my time on segfaults.
+Because this is an optimizing compiler, which focuses on algorithm rather that the ability of bootstrapping. Another reason is that C++ makes it easier to organize large amount of code, which is crucial, considering this is a one-man project. I don't have much time working on this project so i don't want to waste my time on segfaults.
