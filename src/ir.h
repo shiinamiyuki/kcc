@@ -41,7 +41,7 @@ namespace kcc {
         int c;
         double fval;
         IRNode(Opcode _op,int _a,int _b,int _c):op(_op),a(_a),b(_b),c(_c){}
-        IRNode(Opcode _op,int _a, int imm):op(_op),a(_a){}
+        IRNode(Opcode _op,int _a, int imm):op(_op),a(_a),b(imm){}
         IRNode(Opcode _op,int _a,double f):op(_op),a(_a),fval(f){}
         std::string dump()const;
     };

@@ -53,12 +53,19 @@ namespace kcc {
         virtual void linkRec();
 
     public:
+        bool isFloat;
+        unsigned int scale;
         void setType(Type *ty) {
             record.type = ty;
         }
         void setAddr(int a){
             record.addr = a;
         }
+        int getAddr()const{return record.addr;}
+        void setReg(int r){
+            record.reg = r;
+        }
+        int getReg()const{return record.reg;}
         Type *getType() const {
             return record.type;
         }
@@ -148,9 +155,9 @@ namespace kcc {
 
     class BinaryExpression : public AST {
     public:
-        explicit BinaryExpression(const Token &t) { content = t; }
+        explicit BinaryExpression(const Token &t) { content = t;scale = 1; }
 
-        BinaryExpression() = default;
+        BinaryExpression(){scale =1;}
 
         const std::string kind() const override { return "BinaryExpression"; }
 
@@ -207,6 +214,7 @@ namespace kcc {
 
     class Number : public AST {
     public:
+
         explicit Number(const Token &t) { content = t; }
 
         const std::string kind() const override { return "Number"; }

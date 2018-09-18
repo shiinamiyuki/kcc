@@ -4,6 +4,7 @@
 
 #include "ir.h"
 #include "format.h"
+
 std::string kcc::IRNode::dump() const {
     switch(op){
         case Opcode::iconst:
@@ -34,7 +35,11 @@ std::string kcc::IRNode::dump() const {
             return format("jmp ",a);
         case Opcode::branch:
             return format("branch t{}, %true. {}, %false. {}",a,b,c);
+        case Opcode ::load:
+            return format("t{} = [{}]",a,b);
+        case Opcode::store:
+            return format("[{}] = t{}",b,a);
         default:
-            return format("unknown opcode {}",op);
+            return format("unknown opcode {}",(int)op);
     }
 }

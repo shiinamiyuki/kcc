@@ -25,4 +25,7 @@ void kcc::Compiler::compileFile(const char *filename) {
    // println("{}", ast->str());
     Sema sema;
     ast->accept(&sema);
+    IRGenerator irGenerator;
+    ast->accept(&irGenerator);
+    irGenerator.printIR();
 }

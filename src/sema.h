@@ -54,7 +54,7 @@ namespace kcc {
 
     class Sema : public Visitor {
         SymbolTable symbolTable;
-
+        int tCount;
         void pushScope() {
             symbolTable.emplace_back(Scope());
         }
@@ -100,7 +100,7 @@ namespace kcc {
 
         void binaryExpressionAutoPromote(BinaryExpression *, Type *, Type *, bool intOnly = false,
                                          bool retInt = false);
-
+        int alloc(){return tCount++;}
     public:
         Sema();
 

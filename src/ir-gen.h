@@ -6,8 +6,10 @@
 #define KCC_IR_GEN_H
 
 #include "visitor.h"
+#include "ir.h"
 namespace kcc{
     class IRGenerator : public  Visitor{
+        std::vector<IRNode> ir;
     public:
         void visit(For *aFor) override;
 
@@ -68,6 +70,15 @@ namespace kcc{
         void visit(FuncArgType *type) override;
 
         ~IRGenerator() override = default;
+        template <typename ...Args>
+        void emit(Opcode op, Args... args){
+            ir.emplace_back(IRNode(op,args...));
+        }
+        void printIR(){
+            for(auto i: ir){
+                println("{}", i.dump());
+            }
+        }
     };
 }
 

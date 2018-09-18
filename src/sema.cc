@@ -17,6 +17,7 @@ void kcc::Sema::visit(Identifier *identifier) {
     auto info = getVarInfo(identifier);
     identifier->setType(info.ty);
     identifier->setAddr(info.addr);
+    identifier->setReg(alloc());
 }
 
 void kcc::Sema::visit(While *aWhile) {
@@ -54,9 +55,12 @@ void kcc::Sema::visit(TernaryExpression *expression) {
 void kcc::Sema::visit(Number *number) {
     if (number->getToken().type == Token::Type::Int) {
         number->setType(makePrimitiveType("int"));
+        number->isFloat = false;
     } else {
+        number->isFloat = true;
         number->setType(makePrimitiveType("float"));
     }
+    number->setReg(alloc());
 }
 
 void kcc::Sema::visit(Return *aReturn) {
@@ -202,6 +206,7 @@ void Sema::binaryExpressionAutoPromote(
     if (intOnly) {
         if (isInt(ty1) && isInt(ty2)) {
             expression->setType(ty1);
+            expression->setReg(alloc());
         } else {
             err();
         }
@@ -209,11 +214,13 @@ void Sema::binaryExpressionAutoPromote(
     if (isArithmetic(ty1) && isArithmetic(ty2)) {
         if (isInt(ty1) && isInt(ty2)) {
             expression->setType(ty1);
+            expression->setReg(alloc());
         } else {
             if (!retInt)
                 expression->setType(isFloat(ty1) ? ty1 : ty2);
             else
                 expression->setType(isFloat(ty1) ? ty2 : ty1);
+            expression->setReg(alloc());
         }
     } else {
         err();
@@ -246,7 +253,9 @@ void kcc::Sema::visit(BinaryExpression *expression) {
                       getTypeRepr(ty2));
                 expression->setType(nullptr);
             } else {
+                expression->scale = getTypeSize(removeReference(ty1));
                 expression->setType(ty1);
+                expression->setReg(alloc());
             }
         } else if (isPointer(ty2)) {
             if (!isInt(ty1)) {
@@ -255,7 +264,9 @@ void kcc::Sema::visit(BinaryExpression *expression) {
                       getTypeRepr(ty2));
                 expression->setType(nullptr);
             } else {
+                expression->scale = getTypeSize(removeReference(ty2));
                 expression->setType(ty2);
+                expression->setReg(alloc());
             }
         } else {
             binaryExpressionAutoPromote(expression, ty1, ty2, a, b);
@@ -276,6 +287,7 @@ void kcc::Sema::visit(BinaryExpression *expression) {
     } else {
         binaryExpressionAutoPromote(expression, ty1, ty2, a, b);
     }
+    expression->isFloat = isFloat(expression->getType());
 }
 
 void kcc::Sema::visit(UnaryExpression *expression) {
@@ -329,6 +341,7 @@ void kcc::Sema::addGlobalSymbol(const std::string &s, kcc::Type *ty) {
 }
 
 kcc::Sema::Sema() {
+    tCount = 0;
     pushScope();
     addTypeSize("int", 4);
     addTypeSize("unsigned int", 4);
@@ -376,17 +389,17 @@ kcc::VarInfo kcc::Sema::getVarInfo(Identifier *iden) {
 }
 
 bool kcc::Sema::isInt(kcc::Type *ty) {
-    return ty->isPrimitive() &&
+    return ty && ty->isPrimitive() &&
            (ty->tok() == "int"
             || ty->tok() == "char");
 }
 
 bool kcc::Sema::isFloat(kcc::Type *ty) {
-    return ty->isPrimitive() && ty->tok() == "float";
+    return ty && ty->isPrimitive() && ty->tok() == "float";
 }
 
 bool kcc::Sema::isPointer(kcc::Type *ty) {
-    return ty->isPointer();
+    return ty &&ty->isPointer();
 }
 
 std::string kcc::Sema::getTypeRepr(kcc::Type *ty) const {
