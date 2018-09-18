@@ -32,13 +32,13 @@ std::string kcc::IRNode::dump() const {
         case Opcode::fdiv:
             return format("t{} = t{} /. t{}",a,b,c);
         case Opcode::jmp:
-            return format("jmp ",a);
+            return format("jmp {}",a);
         case Opcode::branch:
             return format("branch t{}, %true. {}, %false. {}",a,b,c);
         case Opcode ::load:
             return format("t{} = [{}]",a,b);
         case Opcode::store:
-            return format("[{}] = t{}",b,a);
+            return format("[{}] = t{}",a,b);
         default:
             return format("unknown opcode {}",(int)op);
     }

@@ -74,9 +74,15 @@ namespace kcc{
         void emit(Opcode op, Args... args){
             ir.emplace_back(IRNode(op,args...));
         }
+        template <typename ...Args>
+        void patch(int idx,Opcode op, Args... args){
+            ir[idx] = (IRNode(op,args...));
+        }
         void printIR(){
+            int cnt = 0;
             for(auto i: ir){
-                println("{}", i.dump());
+                println("{}: {}", cnt,i.dump());
+                cnt++;
             }
         }
     };
