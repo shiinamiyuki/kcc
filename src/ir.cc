@@ -23,6 +23,18 @@ std::string kcc::IRNode::dump() const {
             return format("t{} = t{} * t{}",a,b,c);
         case Opcode::idiv:
             return format("t{} = t{} / t{}",a,b,c);
+        case Opcode::il:
+            return format("t{} = t{} < t{}",a,b,c);
+        case Opcode::ile:
+            return format("t{} = t{} <= t{}",a,b,c);
+        case Opcode::ig:
+            return format("t{} = t{} > t{}",a,b,c);
+        case Opcode::ige:
+            return format("t{} = t{} >= t{}",a,b,c);
+        case Opcode::ie:
+            return format("t{} = t{} == t{}",a,b,c);
+        case Opcode::ine:
+            return format("t{} = t{} != t{}",a,b,c);
         case Opcode::fadd:
             return format("t{} = t{} +. t{}",a,b,c);
         case Opcode::fsub:
@@ -31,6 +43,18 @@ std::string kcc::IRNode::dump() const {
             return format("t{} = t{} *. t{}",a,b,c);
         case Opcode::fdiv:
             return format("t{} = t{} /. t{}",a,b,c);
+        case Opcode::fl:
+            return format("t{} = t{} <. t{}",a,b,c);
+        case Opcode::fle:
+            return format("t{} = t{} <=. t{}",a,b,c);
+        case Opcode::fg:
+            return format("t{} = t{} >. t{}",a,b,c);
+        case Opcode::fge:
+            return format("t{} = t{} >=. t{}",a,b,c);
+        case Opcode::fe:
+            return format("t{} = t{} ==. t{}",a,b,c);
+        case Opcode::fne:
+            return format("t{} = t{} !=. t{}",a,b,c);
         case Opcode::jmp:
             return format("jmp {}",a);
         case Opcode::branch:

@@ -17,6 +17,12 @@ namespace kcc {
         isub,
         imul,
         idiv,
+        il,
+        ile,
+        ig,
+        ige,
+        ie,
+        ine,
         cvti2f,
         cvtf2i,
         ret,
@@ -29,7 +35,13 @@ namespace kcc {
         fsub,
         fmul,
         fdiv,
-
+        fl,
+        fle,
+        fg,
+        fge,
+        fe,
+        fne,
+        move,
     };
     struct Phi{
 

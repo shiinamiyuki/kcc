@@ -15,14 +15,14 @@ void kcc::IRGenerator::visit(kcc::Identifier *identifier) {
 }
 
 void kcc::IRGenerator::visit(kcc::While *aWhile) {
-    int begin = (int)ir.size();
+    int begin = (int) ir.size();
     aWhile->cond()->accept(this);
     int cond = aWhile->cond()->getReg();
-    int branchIdx = (int)ir.size();
+    int branchIdx = (int) ir.size();
     emit(Opcode::branch, cond, 0, 0);
     aWhile->body()->accept(this);
     emit(Opcode::jmp, begin);
-    patch(branchIdx,Opcode::branch,cond,branchIdx+1,ir.size());
+    patch(branchIdx, Opcode::branch, cond, branchIdx + 1, ir.size());
 }
 
 void kcc::IRGenerator::visit(kcc::Block *block) {
@@ -39,9 +39,9 @@ void kcc::IRGenerator::visit(kcc::If *anIf) {
     int branchIdx = ir.size();
     emit(Opcode::branch, cond, 0, 0);
     anIf->body()->accept(this);
-    int jmpIdx = (int)ir.size();
+    int jmpIdx = (int) ir.size();
     emit(Opcode::jmp, 0);
-    int a = (int)ir.size();
+    int a = (int) ir.size();
     if (anIf->size() == 3) {
         anIf->elsePart()->accept(this);
     }
@@ -142,41 +142,57 @@ void kcc::IRGenerator::visit(kcc::BinaryExpression *expression) {
                 emit(Opcode::cvti2f, expression->rhs()->getReg(),
                      expression->rhs()->getReg());
             }
+            Opcode opcode;
             if (op == "+") {
-                emit(Opcode::fadd, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::fadd;
             } else if (op == "-") {
-                emit(Opcode::fsub, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::fsub;
             } else if (op == "*") {
-                emit(Opcode::fmul, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::fmul;
             } else if (op == "/") {
-                emit(Opcode::fdiv, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::fdiv;
+            } else if (op == "<") {
+                opcode = Opcode::fl;
+            } else if (op == "<=") {
+                opcode = Opcode::fle;
+            } else if (op == ">") {
+                opcode = Opcode::fg;
+            } else if (op == ">=") {
+                opcode = Opcode::fge;
+            } else if (op == "==") {
+                opcode = Opcode::fe;
+            } else if (op == "!=") {
+                opcode = Opcode::fne;
             }
+            emit(opcode, expression->getReg(),
+                 expression->lhs()->getReg(),
+                 expression->rhs()->getReg());
         } else {
+            Opcode opcode;
             if (op == "+") {
-                emit(Opcode::iadd, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::iadd;
             } else if (op == "-") {
-                emit(Opcode::isub, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::isub;
             } else if (op == "*") {
-                emit(Opcode::imul, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::imul;
             } else if (op == "/") {
-                emit(Opcode::idiv, expression->getReg(),
-                     expression->lhs()->getReg(),
-                     expression->rhs()->getReg());
+                opcode = Opcode::idiv;
+            } else if (op == "<") {
+                opcode = Opcode::il;
+            } else if (op == "<=") {
+                opcode = Opcode::ile;
+            } else if (op == ">") {
+                opcode = Opcode::ig;
+            } else if (op == ">=") {
+                opcode = Opcode::ige;
+            } else if (op == "==") {
+                opcode = Opcode::ie;
+            } else if (op == "!=") {
+                opcode = Opcode::ine;
             }
+            emit(opcode, expression->getReg(),
+                 expression->lhs()->getReg(),
+                 expression->rhs()->getReg());
         }
     }
 }
