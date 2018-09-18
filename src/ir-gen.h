@@ -11,6 +11,7 @@ namespace kcc{
     class IRGenerator : public  Visitor{
         std::vector<IRNode> ir;
     public:
+        friend class CFG;
         void visit(For *aFor) override;
 
         void visit(Identifier *identifier) override;
