@@ -42,20 +42,25 @@ namespace kcc {
         fe,
         fne,
         move,
+        empty,
     };
     struct Phi{
 
     };
+    struct BasicBlock;
     struct IRNode{
         Opcode op;
         int a;
         int b;
         int c;
         double fval;
-        IRNode(Opcode _op,int _a):op(_op),a(_a){}
-        IRNode(Opcode _op,int _a,int _b,int _c):op(_op),a(_a),b(_b),c(_c){}
-        IRNode(Opcode _op,int _a, int imm):op(_op),a(_a),b(imm){}
-        IRNode(Opcode _op,int _a,double f):op(_op),a(_a),fval(f){}
+        BasicBlock * bb;
+        IRNode(Opcode _op,int _a):op(_op),a(_a),bb(nullptr){}
+        IRNode(Opcode _op,int _a,int _b,int _c):op(_op),a(_a),b(_b),c(_c),bb(nullptr){}
+        IRNode(Opcode _op,int _a, int imm):op(_op),a(_a),b(imm),bb(nullptr){}
+        IRNode(Opcode _op,int _a,double f):op(_op),a(_a),fval(f),bb(nullptr){}
+        std::vector<int> in;
+        std::vector<int> out;
         std::string dump()const;
     };
 }

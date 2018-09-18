@@ -12,17 +12,21 @@ namespace kcc {
     struct BasicBlock;
     struct Edge {
         BasicBlock *from, *to;
+        Edge():from(nullptr),to(nullptr){}
     };
     struct BasicBlock {
         std::vector<Edge> in;
         std::vector<IRNode> block;
-        Edge branchTrue, branchFalse;
+        Edge branchTrue, branchFalse;// for jmps, always take branchTrue
     };
 
     class CFG {
         std::vector<BasicBlock *> allBlocks;
     public:
-        CFG(const IRGenerator&); // construct CFG from IR
+        friend class IRGenerator;
+        void addBasicBlock(BasicBlock * block){
+            allBlocks.emplace_back(block);
+        }
     };
 }
 #endif //KCC_CFG_H

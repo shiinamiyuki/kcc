@@ -3,3 +3,4 @@
 //
 
 #include "cfg.h"
+using namespace kcc;

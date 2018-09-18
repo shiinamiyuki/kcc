@@ -28,4 +28,5 @@ void kcc::Compiler::compileFile(const char *filename) {
     IRGenerator irGenerator;
     ast->accept(&irGenerator);
     irGenerator.printIR();
+    irGenerator.generateCFG();
 }

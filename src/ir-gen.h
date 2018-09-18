@@ -7,11 +7,15 @@
 
 #include "visitor.h"
 #include "ir.h"
+#include "cfg.h"
 namespace kcc{
     class IRGenerator : public  Visitor{
         std::vector<IRNode> ir;
+        void findEdges();
+        void trace(CFG *, int idx);
     public:
         friend class CFG;
+        CFG * generateCFG();
         void visit(For *aFor) override;
 
         void visit(Identifier *identifier) override;
