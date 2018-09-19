@@ -222,12 +222,12 @@ void kcc::IRGenerator::visit(kcc::FuncArgType *type) {
 }
 
 void IRGenerator::findEdges() {
-    emit(Opcode::empty,0);//to prevent segfaults :D
-    for(int i = 0;i < ir.size();i++){
-        if(ir[i].op == Opcode::jmp){
+    emit(Opcode::empty, 0);//to prevent segfaults :D
+    for (int i = 0; i < ir.size(); i++) {
+        if (ir[i].op == Opcode::jmp) {
             ir[ir[i].a].in.emplace_back(i);
             ir[i].out.emplace_back(ir[i].a);
-        }else if(ir[i].op == Opcode::branch){
+        } else if (ir[i].op == Opcode::branch) {
             ir[ir[i].b].in.emplace_back(i);
             ir[ir[i].c].in.emplace_back(i);
             ir[i].out.emplace_back(ir[i].b);
@@ -239,23 +239,24 @@ void IRGenerator::findEdges() {
 CFG *IRGenerator::generateCFG() {
     findEdges();
     auto cfg = new CFG();
-    trace(cfg,0);
+    trace(cfg, 0);
     return cfg;
 }
 
 void IRGenerator::trace(CFG *cfg, int idx) {
-    if(idx>=ir.size())
+    if (idx >= ir.size())
         return;
     auto bb = new BasicBlock();
-    while(ir[idx].out.size() == 0){
+    while (ir[idx].out.size() == 0 && idx < ir.size()) {
         ir[idx].bb = bb; //marked as covered
-        bb->block.emplace_back(ir[idx++]);
+        bb->block.push_back(ir[idx++]);
     }
-    bb->block.emplace_back(ir[idx]);
+    if(idx < ir.size())
+        bb->block.push_back(ir[idx]);
     cfg->addBasicBlock(bb);
-    for(auto i:ir[idx].out){
-        if(!ir[i].bb)// not yet covered
-            trace(cfg,i);
+    for (auto i:ir[idx].out) {
+        if (!ir[i].bb)// not yet covered
+            trace(cfg, i);
     }
 }
 

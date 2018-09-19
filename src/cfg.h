@@ -25,7 +25,7 @@ namespace kcc {
     public:
         friend class IRGenerator;
         void addBasicBlock(BasicBlock * block){
-            allBlocks.emplace_back(block);
+            allBlocks.push_back(block);
         }
     };
 }
