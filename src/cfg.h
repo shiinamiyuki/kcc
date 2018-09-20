@@ -18,6 +18,7 @@ namespace kcc {
         bool empty()const{return from == nullptr || to == nullptr;}
     };
     struct BasicBlock {
+        int id;
         std::vector<Edge> in;
         std::vector<IRNode> block;
         Edge branchTrue, branchFalse;// for jmps, always take branchTrue
@@ -28,6 +29,7 @@ namespace kcc {
     public:
         friend class IRGenerator;
         void addBasicBlock(BasicBlock * block){
+            block->id = allBlocks.size();
             allBlocks.push_back(block);
         }
         void dump();

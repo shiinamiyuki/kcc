@@ -26,7 +26,9 @@ void kcc::IRGenerator::visit(kcc::While *aWhile) {
 }
 
 void kcc::IRGenerator::visit(kcc::Block *block) {
-    visitAll(block);
+    for(auto i:*block){
+        i->accept(this);
+    }
 }
 
 void kcc::IRGenerator::visit(kcc::TopLevel *level) {
@@ -239,28 +241,69 @@ void IRGenerator::findEdges() {
 CFG *IRGenerator::generateCFG() {
     findEdges();
     auto cfg = new CFG();
-    trace(cfg, 0);
+    //trace(cfg, 0);
+    naive(cfg);
     assignEdgeToBB();
     return cfg;
 }
+
+
+void IRGenerator::naive(CFG* cfg) {
+    /*I don't understand.
+     * */
+    for(int idx = 0;idx<ir.size();){
+        auto bb = new BasicBlock();
+        if(!ir[idx].out.empty()){
+            ir[idx].bb = bb;
+            bb->block.push_back(ir[idx++]);
+        }else {
+            if (!ir[idx].in.empty() && ir[idx].out.empty()) {
+                ir[idx].bb = bb;
+                bb->block.push_back(ir[idx++]);
+            }
+            while (idx < ir.size() && ir[idx].out.empty() && ir[idx].in.empty()) {
+                ir[idx].bb = bb;
+                bb->block.push_back(ir[idx++]);
+            }
+            if(ir[idx-1].out.empty() && idx<ir.size())
+                ir[idx-1].out.emplace_back(idx);
+
+        }
+        cfg->addBasicBlock(bb);
+        while (idx < ir.size() && ir[idx].bb)
+            idx++;
+    }
+}
+
 
 void IRGenerator::trace(CFG *cfg, int idx) {
     if (idx >= ir.size())
         return;
     auto bb = new BasicBlock();
-    while (ir[idx].out.empty() && idx < ir.size()) {
+    cfg->addBasicBlock(bb);
+    if(!ir[idx].in.empty()){
         ir[idx].bb = bb; //marked as covered
         bb->block.push_back(ir[idx++]);
     }
-    if(idx < ir.size()) {
+    while (ir[idx].out.empty() && ir[idx].in.empty() && idx < ir.size()) {
+        ir[idx].bb = bb; //marked as covered
+        bb->block.push_back(ir[idx++]);
+    }
+    if(idx>=ir.size()){return;}
+    if(!ir[idx].out.empty()) {
         ir[idx].bb = bb;
         bb->block.push_back(ir[idx]);
+        for (auto i:ir[idx].out) {
+            if (!ir[i].bb)// not yet covered
+                trace(cfg, i);
+        }
+    }else if(!ir[idx].in.empty()){
+        trace(cfg,idx);
+
     }
-    cfg->addBasicBlock(bb);
-    for (auto i:ir[idx].out) {
-        if (!ir[i].bb)// not yet covered
-            trace(cfg, i);
-    }
+
+
+
 }
 
 void IRGenerator::assignEdgeToBB() {
@@ -269,10 +312,12 @@ void IRGenerator::assignEdgeToBB() {
             auto bb = i.bb;
             if(!bb)continue;
             auto jt = ir[i.out[0]].bb;
+            assert(bb != jt);
             bb->branchTrue = Edge(bb,jt);
             jt->in.emplace_back(Edge(bb,jt));
             if(i.out.size() == 2){
                 auto jf = ir[i.out[1]].bb;
+                assert(bb != jf);
                 bb->branchFalse = Edge(bb,jf);
                 jf->in.emplace_back(Edge(bb,jf));
             }

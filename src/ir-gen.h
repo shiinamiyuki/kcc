@@ -14,6 +14,7 @@ namespace kcc{
         void findEdges();
         void trace(CFG *, int idx);
         void assignEdgeToBB();
+        void naive(CFG*);
     public:
         friend class CFG;
         CFG * generateCFG();
