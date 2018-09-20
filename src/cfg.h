@@ -13,6 +13,9 @@ namespace kcc {
     struct Edge {
         BasicBlock *from, *to;
         Edge():from(nullptr),to(nullptr){}
+        Edge(BasicBlock *_from, BasicBlock*_to):
+        from(_from),to(_to){}
+        bool empty()const{return from == nullptr || to == nullptr;}
     };
     struct BasicBlock {
         std::vector<Edge> in;
@@ -27,6 +30,7 @@ namespace kcc {
         void addBasicBlock(BasicBlock * block){
             allBlocks.push_back(block);
         }
+        void dump();
     };
 }
 #endif //KCC_CFG_H

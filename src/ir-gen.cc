@@ -240,6 +240,7 @@ CFG *IRGenerator::generateCFG() {
     findEdges();
     auto cfg = new CFG();
     trace(cfg, 0);
+    assignEdgeToBB();
     return cfg;
 }
 
@@ -247,16 +248,35 @@ void IRGenerator::trace(CFG *cfg, int idx) {
     if (idx >= ir.size())
         return;
     auto bb = new BasicBlock();
-    while (ir[idx].out.size() == 0 && idx < ir.size()) {
+    while (ir[idx].out.empty() && idx < ir.size()) {
         ir[idx].bb = bb; //marked as covered
         bb->block.push_back(ir[idx++]);
     }
-    if(idx < ir.size())
+    if(idx < ir.size()) {
+        ir[idx].bb = bb;
         bb->block.push_back(ir[idx]);
+    }
     cfg->addBasicBlock(bb);
     for (auto i:ir[idx].out) {
         if (!ir[i].bb)// not yet covered
             trace(cfg, i);
+    }
+}
+
+void IRGenerator::assignEdgeToBB() {
+    for(auto i : ir){
+        if(!i.out.empty()){
+            auto bb = i.bb;
+            if(!bb)continue;
+            auto jt = ir[i.out[0]].bb;
+            bb->branchTrue = Edge(bb,jt);
+            jt->in.emplace_back(Edge(bb,jt));
+            if(i.out.size() == 2){
+                auto jf = ir[i.out[1]].bb;
+                bb->branchFalse = Edge(bb,jf);
+                jf->in.emplace_back(Edge(bb,jf));
+            }
+        }
     }
 }
 

@@ -13,6 +13,7 @@ namespace kcc{
         std::vector<IRNode> ir;
         void findEdges();
         void trace(CFG *, int idx);
+        void assignEdgeToBB();
     public:
         friend class CFG;
         CFG * generateCFG();
@@ -91,6 +92,7 @@ namespace kcc{
             }
         }
     };
+
 }
 
 #endif //KCC_IR_GEN_H
