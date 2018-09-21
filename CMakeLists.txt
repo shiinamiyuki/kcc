@@ -3,4 +3,4 @@ project(kcc)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(kcc src/main.cc src/lex.cc src/format.cc src/ast.cc src/parse.cc src/sema.cc src/sema.h src/compile.cc src/compile.h src/type.cc src/type.h src/ir.cc src/ir.h src/ir-gen.cc src/ir-gen.h)
+add_executable(kcc src/main.cc src/lex.cc src/format.cc src/ast.cc src/parse.cc src/sema.cc src/sema.h src/compile.cc src/compile.h src/type.cc src/type.h src/ir.cc src/ir.h src/ir-gen.cc src/ir-gen.h src/cfg.cc src/cfg.h)
