@@ -21,6 +21,7 @@ namespace kcc {
         int id;
         std::vector<Edge> in;
         std::vector<IRNode> block;
+        std::vector<BasicBlock*> DF, dom;
         Edge branchTrue, branchFalse;// for jmps, always take branchTrue
     };
 
@@ -33,6 +34,8 @@ namespace kcc {
             allBlocks.push_back(block);
         }
         void dump();
+        void computeDominator();
+        void computeDominanceFrontier();
     };
 }
 #endif //KCC_CFG_H
