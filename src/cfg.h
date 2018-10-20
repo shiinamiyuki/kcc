@@ -23,6 +23,7 @@ namespace kcc {
         std::vector<IRNode> block;
         std::vector<BasicBlock*> DF, dom;
         Edge branchTrue, branchFalse;// for jmps, always take branchTrue
+        BasicBlock * idom();
     };
 
     class CFG {

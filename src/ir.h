@@ -43,6 +43,8 @@ namespace kcc {
         fne,
         move,
         empty,
+        break_placeholder,
+        continue_placeholder,
     };
     struct Phi{
 

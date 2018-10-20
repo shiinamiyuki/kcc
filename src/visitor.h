@@ -65,7 +65,8 @@ namespace  kcc {
         virtual void visit(FuncArgType *) = 0;
 
         virtual ~Visitor() = default;
-        void visitAll(AST *a){
+
+        virtual void visitAll(AST *a){
             for(auto i:*a){
                 i->accept(this);
             }

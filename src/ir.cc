@@ -65,6 +65,8 @@ std::string kcc::IRNode::dump() const {
             return format("[{}] = t{}",a,b);
         case Opcode::empty:
             return std::string("end");
+        case Opcode::ret:
+            return format("ret t{}", a);
         default:
             return format("unknown opcode {}",(int)op);
     }

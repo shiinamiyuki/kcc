@@ -29,5 +29,8 @@ void kcc::Compiler::compileFile(const char *filename) {
     ast->accept(&irGenerator);
     irGenerator.printIR();
     auto cfg = irGenerator.generateCFG();
+
+    cfg->computeDominator();
+    cfg->computeDominanceFrontier();
     cfg->dump();
 }

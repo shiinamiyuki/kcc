@@ -8,16 +8,24 @@
 #include "visitor.h"
 #include "ir.h"
 #include "cfg.h"
-namespace kcc{
-    class IRGenerator : public  Visitor{
+
+namespace kcc {
+    class IRGenerator : public Visitor {
         std::vector<IRNode> ir;
+
         void findEdges();
+
         void trace(CFG *, int idx);
+
         void assignEdgeToBB();
-        void naive(CFG*);
+
+        void naive(CFG *);
+
     public:
         friend class CFG;
-        CFG * generateCFG();
+
+        CFG *generateCFG();
+
         void visit(For *aFor) override;
 
         void visit(Identifier *identifier) override;
@@ -77,22 +85,27 @@ namespace kcc{
         void visit(FuncArgType *type) override;
 
         ~IRGenerator() override = default;
-        template <typename ...Args>
-        void emit(Opcode op, Args... args){
-            ir.emplace_back(IRNode(op,args...));
+
+        template<typename ...Args>
+        void emit(Opcode op, Args... args) {
+            ir.emplace_back(IRNode(op, args...));
         }
-        template <typename ...Args>
-        void patch(int idx,Opcode op, Args... args){
-            ir[idx] = (IRNode(op,args...));
+
+        template<typename ...Args>
+        void patch(int idx, Opcode op, Args... args) {
+            ir[idx] = (IRNode(op, args...));
         }
-        void printIR(){
+
+        void printIR() {
             int cnt = 0;
-            for(auto i: ir){
-                println("{}: {}", cnt,i.dump());
+            for (auto i: ir) {
+                println("{}: {}", cnt, i.dump());
                 cnt++;
             }
         }
     };
+
+
 
 }
 

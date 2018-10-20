@@ -64,7 +64,8 @@ void kcc::IRGenerator::visit(kcc::Number *number) {
 }
 
 void kcc::IRGenerator::visit(kcc::Return *aReturn) {
-
+    aReturn->first()->accept(this);
+    emit(Opcode::ret, aReturn->getReg());
 }
 
 void kcc::IRGenerator::visit(kcc::Empty *empty) {
@@ -234,6 +235,8 @@ void IRGenerator::findEdges() {
             ir[ir[i].c].in.emplace_back(i);
             ir[i].out.emplace_back(ir[i].b);
             ir[i].out.emplace_back(ir[i].c);
+        } else if(ir[i].op == Opcode::ret){
+            ir[i].out.emplace_back(ir.size() - 1);
         }
     }
 }
