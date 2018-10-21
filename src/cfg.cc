@@ -18,8 +18,15 @@ void CFG::dump() {
         for (const auto &stmt:i->block) {
             s.append(stmt.dump()).append("\n");
         }
-        if (!i->DF.empty()) {
+        if (!i->dom.empty()) {
             s.append("dom=");
+            for (const auto f : i->dom) {
+                s.append(format("{} ", getId(f)));
+            }
+            s.append("\n");
+        }
+        if (!i->DF.empty()) {
+            s.append("DF=");
             for (const auto f : i->DF) {
                 s.append(format("{} ", getId(f)));
             }
@@ -55,7 +62,7 @@ std::vector<T> Intersection(const std::vector<T> &A, const std::vector<T> &B) {
     std::vector<T> result;
     for (auto i: A) {
         auto iter = std::find(B.begin(), B.end(), i);
-        if (iter == B.end()) {
+        if (iter != B.end()) {
             result.emplace_back(i);
         }
     }

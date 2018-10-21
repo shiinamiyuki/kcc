@@ -46,8 +46,15 @@ namespace kcc {
         break_placeholder,
         continue_placeholder,
     };
+    struct Version{
+        int addr;
+        int ver;
+        Version(int _addr,int _ver):addr(_addr),ver(_ver){ }
+        Version():ver(-1){}
+    };
     struct Phi{
-
+        Version result;
+        std::vector<Version> param;
     };
     struct BasicBlock;
     struct IRNode{
@@ -56,6 +63,7 @@ namespace kcc {
         int b;
         int c;
         double fval;
+        int version;
         BasicBlock * bb;
         IRNode(Opcode _op,int _a):op(_op),a(_a),bb(nullptr){}
         IRNode(Opcode _op,int _a,int _b,int _c):op(_op),a(_a),b(_b),c(_c),bb(nullptr){}

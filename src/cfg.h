@@ -19,6 +19,7 @@ namespace kcc {
     };
     struct BasicBlock {
         int id;
+        std::vector<Phi> phi;
         std::vector<Edge> in;
         std::vector<IRNode> block;
         std::vector<BasicBlock*> DF, dom;
