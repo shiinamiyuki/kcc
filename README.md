@@ -1,4 +1,4 @@
-# kcc
+# kcc (refactoring needed)
 A small C Compiler (in progress) </br>
 This aims to be a full C11 compilant optimizing compiler.
 
