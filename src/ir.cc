@@ -1,12 +1,17 @@
 //
 // Created by xiaoc on 2018/9/17.
 //
-
+#include "cfg.h"
 #include "ir.h"
 #include "format.h"
 
+using namespace kcc;
 std::string kcc::IRNode::dump() const {
     switch(op){
+        case Opcode::func_begin:
+            return format("FUNC: {},{}",s,a);
+        case Opcode::func_end:
+            return std::string("END");
         case Opcode::iconst:
             return format("t{} = ${}",a,b);
         case Opcode::fconst:
@@ -69,5 +74,80 @@ std::string kcc::IRNode::dump() const {
             return format("ret t{}", a);
         default:
             return format("unknown opcode {}",(int)op);
+    }
+}
+
+void Function::findEdges() {
+    ir.emplace_back(IRNode(Opcode::empty, 0));//to prevent segfaults :D
+    for (int i = 0; i < ir.size(); i++) {
+        if (ir[i].op == Opcode::jmp) {
+            ir[ir[i].a].in.emplace_back(i);
+            ir[i].out.emplace_back(ir[i].a);
+        } else if (ir[i].op == Opcode::branch) {
+            ir[ir[i].b].in.emplace_back(i);
+            ir[ir[i].c].in.emplace_back(i);
+            ir[i].out.emplace_back(ir[i].b);
+            ir[i].out.emplace_back(ir[i].c);
+        } else if(ir[i].op == Opcode::ret){
+            ir[i].out.emplace_back(ir.size() - 1);
+        }
+    }
+}
+
+
+CFG *Function::generateCFG() {
+    findEdges();
+    auto cfg = new CFG();
+    naive(cfg);
+    assignEdgeToBB();
+    return cfg;
+}
+
+
+void Function::naive(CFG* cfg) {
+    /*I don't understand.
+     * */
+    for(int idx = 0;idx<ir.size();){
+        auto bb = new BasicBlock();
+        if(!ir[idx].out.empty()){
+            ir[idx].bb = bb;
+            bb->block.push_back(ir[idx++]);
+        }else {
+            if (!ir[idx].in.empty() && ir[idx].out.empty()) {
+                ir[idx].bb = bb;
+                bb->block.push_back(ir[idx++]);
+            }
+            while (idx < ir.size() && ir[idx].out.empty() && ir[idx].in.empty()) {
+                ir[idx].bb = bb;
+                bb->block.push_back(ir[idx++]);
+            }
+            if(ir[idx-1].out.empty() && idx<ir.size())
+                ir[idx-1].out.emplace_back(idx);
+
+        }
+        cfg->addBasicBlock(bb);
+        while (idx < ir.size() && ir[idx].bb)
+            idx++;
+    }
+}
+
+
+
+void Function::assignEdgeToBB() {
+    for(auto i : ir){
+        if(!i.out.empty()){
+            auto bb = i.bb;
+            if(!bb)continue;
+            auto jt = ir[i.out[0]].bb;
+            assert(bb != jt);
+            bb->branchTrue = Edge(bb,jt);
+            jt->in.emplace_back(Edge(bb,jt));
+            if(i.out.size() == 2){
+                auto jf = ir[i.out[1]].bb;
+                assert(bb != jf);
+                bb->branchFalse = Edge(bb,jf);
+                jf->in.emplace_back(Edge(bb,jf));
+            }
+        }
     }
 }

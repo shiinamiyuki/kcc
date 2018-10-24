@@ -22,15 +22,11 @@ void kcc::Compiler::compileFile(const char *filename) {
     Parser p(lex);
     auto ast = p.parse();
     ast->link();
-    println("{}", ast->str());
+ //   println("{}", ast->str());
     Sema sema;
     ast->accept(&sema);
     IRGenerator irGenerator;
     ast->accept(&irGenerator);
     irGenerator.printIR();
-    auto cfg = irGenerator.generateCFG();
-
-    cfg->computeDominator();
-    cfg->computeDominanceFrontier();
-    cfg->dump();
+    irGenerator.buildSSA();
 }

@@ -103,6 +103,7 @@ void kcc::Sema::visit(FuncDef *def) {
     def->arg()->accept(this);
     def->block()->accept(this);
     popScope();
+    def->frameSize = stackFrame.bytesAllocated;
 }
 
 void kcc::Sema::visit(CallExpression *expression) {

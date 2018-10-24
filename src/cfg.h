@@ -22,6 +22,8 @@ namespace kcc {
         std::vector<Phi> phi;
         std::vector<Edge> in;
         std::vector<IRNode> block;
+        std::set<int> AOrig;
+        std::set<int> Aphi;
         std::vector<BasicBlock*> DF, dom;
         Edge branchTrue, branchFalse;// for jmps, always take branchTrue
         BasicBlock * idom();
@@ -29,15 +31,19 @@ namespace kcc {
 
     class CFG {
         std::vector<BasicBlock *> allBlocks;
+        std::unordered_map<int, std::set<BasicBlock*>> defSite;
     public:
         friend class IRGenerator;
         void addBasicBlock(BasicBlock * block){
-            block->id = allBlocks.size();
+            block->id = (int)allBlocks.size();
             allBlocks.push_back(block);
         }
         void dump();
         void computeDominator();
         void computeDominanceFrontier();
+        void findAOrig();
+        void insertPhi();
+        void buildSSA();
     };
 }
 #endif //KCC_CFG_H

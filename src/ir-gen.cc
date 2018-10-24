@@ -15,14 +15,14 @@ void kcc::IRGenerator::visit(kcc::Identifier *identifier) {
 }
 
 void kcc::IRGenerator::visit(kcc::While *aWhile) {
-    int begin = (int) ir.size();
+    int begin = (int) ir().size();
     aWhile->cond()->accept(this);
     int cond = aWhile->cond()->getReg();
-    int branchIdx = (int) ir.size();
+    int branchIdx = (int) ir().size();
     emit(Opcode::branch, cond, 0, 0);
     aWhile->body()->accept(this);
     emit(Opcode::jmp, begin);
-    patch(branchIdx, Opcode::branch, cond, branchIdx + 1, ir.size());
+    patch(branchIdx, Opcode::branch, cond, branchIdx + 1, ir().size());
 }
 
 void kcc::IRGenerator::visit(kcc::Block *block) {
@@ -38,17 +38,17 @@ void kcc::IRGenerator::visit(kcc::TopLevel *level) {
 void kcc::IRGenerator::visit(kcc::If *anIf) {
     anIf->cond()->accept(this);
     int cond = anIf->cond()->getReg();
-    int branchIdx = ir.size();
+    int branchIdx = ir().size();
     emit(Opcode::branch, cond, 0, 0);
     anIf->body()->accept(this);
-    int jmpIdx = (int) ir.size();
+    int jmpIdx = (int) ir().size();
     emit(Opcode::jmp, 0);
-    int a = (int) ir.size();
+    int a = (int) ir().size();
     if (anIf->size() == 3) {
         anIf->elsePart()->accept(this);
     }
     patch(branchIdx, Opcode::branch, cond, branchIdx + 1, a);
-    patch(jmpIdx, Opcode::jmp, ir.size());
+    patch(jmpIdx, Opcode::jmp, ir().size());
 
 }
 
@@ -93,6 +93,8 @@ void kcc::IRGenerator::visit(kcc::FuncDefArg *arg) {
 }
 
 void kcc::IRGenerator::visit(kcc::FuncDef *def) {
+    auto funcName = def->name();
+    funcs.emplace_back(Function(funcName));
     def->block()->accept(this);
 }
 
@@ -224,107 +226,11 @@ void kcc::IRGenerator::visit(kcc::FuncArgType *type) {
 
 }
 
-void IRGenerator::findEdges() {
-    emit(Opcode::empty, 0);//to prevent segfaults :D
-    for (int i = 0; i < ir.size(); i++) {
-        if (ir[i].op == Opcode::jmp) {
-            ir[ir[i].a].in.emplace_back(i);
-            ir[i].out.emplace_back(ir[i].a);
-        } else if (ir[i].op == Opcode::branch) {
-            ir[ir[i].b].in.emplace_back(i);
-            ir[ir[i].c].in.emplace_back(i);
-            ir[i].out.emplace_back(ir[i].b);
-            ir[i].out.emplace_back(ir[i].c);
-        } else if(ir[i].op == Opcode::ret){
-            ir[i].out.emplace_back(ir.size() - 1);
-        }
-    }
-}
-
-CFG *IRGenerator::generateCFG() {
-    findEdges();
-    auto cfg = new CFG();
-    //trace(cfg, 0);
-    naive(cfg);
-    assignEdgeToBB();
-    return cfg;
-}
-
-
-void IRGenerator::naive(CFG* cfg) {
-    /*I don't understand.
-     * */
-    for(int idx = 0;idx<ir.size();){
-        auto bb = new BasicBlock();
-        if(!ir[idx].out.empty()){
-            ir[idx].bb = bb;
-            bb->block.push_back(ir[idx++]);
-        }else {
-            if (!ir[idx].in.empty() && ir[idx].out.empty()) {
-                ir[idx].bb = bb;
-                bb->block.push_back(ir[idx++]);
-            }
-            while (idx < ir.size() && ir[idx].out.empty() && ir[idx].in.empty()) {
-                ir[idx].bb = bb;
-                bb->block.push_back(ir[idx++]);
-            }
-            if(ir[idx-1].out.empty() && idx<ir.size())
-                ir[idx-1].out.emplace_back(idx);
-
-        }
-        cfg->addBasicBlock(bb);
-        while (idx < ir.size() && ir[idx].bb)
-            idx++;
-    }
-}
-
-
-void IRGenerator::trace(CFG *cfg, int idx) {
-    if (idx >= ir.size())
-        return;
-    auto bb = new BasicBlock();
-    cfg->addBasicBlock(bb);
-    if(!ir[idx].in.empty()){
-        ir[idx].bb = bb; //marked as covered
-        bb->block.push_back(ir[idx++]);
-    }
-    while (ir[idx].out.empty() && ir[idx].in.empty() && idx < ir.size()) {
-        ir[idx].bb = bb; //marked as covered
-        bb->block.push_back(ir[idx++]);
-    }
-    if(idx>=ir.size()){return;}
-    if(!ir[idx].out.empty()) {
-        ir[idx].bb = bb;
-        bb->block.push_back(ir[idx]);
-        for (auto i:ir[idx].out) {
-            if (!ir[i].bb)// not yet covered
-                trace(cfg, i);
-        }
-    }else if(!ir[idx].in.empty()){
-        trace(cfg,idx);
-
-    }
-
-
-
-}
-
-void IRGenerator::assignEdgeToBB() {
-    for(auto i : ir){
-        if(!i.out.empty()){
-            auto bb = i.bb;
-            if(!bb)continue;
-            auto jt = ir[i.out[0]].bb;
-            assert(bb != jt);
-            bb->branchTrue = Edge(bb,jt);
-            jt->in.emplace_back(Edge(bb,jt));
-            if(i.out.size() == 2){
-                auto jf = ir[i.out[1]].bb;
-                assert(bb != jf);
-                bb->branchFalse = Edge(bb,jf);
-                jf->in.emplace_back(Edge(bb,jf));
-            }
-        }
+void IRGenerator::buildSSA() {
+    for(auto func:funcs){
+        auto cfg = func.generateCFG();
+        cfg->buildSSA();
+        cfg->dump();
     }
 }
 

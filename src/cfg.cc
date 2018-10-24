@@ -14,10 +14,14 @@ void CFG::dump() {
     for (auto i:allBlocks) {
         auto id = getId(i);
         std::string s;
-        s.append(format("id={}\n",id));
+        s.append(format("id={}\n", id));
+        if(!i->phi.empty()){
+            s.append(format("phi={}\n",i->phi.size()));
+        }
         for (const auto &stmt:i->block) {
             s.append(stmt.dump()).append("\n");
         }
+
         if (!i->dom.empty()) {
             s.append("dom=");
             for (const auto f : i->dom) {
@@ -145,4 +149,53 @@ BasicBlock *BasicBlock::idom() {
         }
     }
     return nullptr;
+}
+
+void CFG::findAOrig() {
+    for (auto i:allBlocks) {
+        for (auto stmt:i->block) {
+            if (stmt.op == Opcode::store) {
+                i->AOrig.insert(stmt.a);
+            } else if (stmt.op == Opcode::load) {
+                i->AOrig.insert(stmt.b);
+            }
+        }
+    }
+}
+
+void CFG::insertPhi() {
+    for (auto n: allBlocks) {
+        for (auto a:n->AOrig) {
+            if (defSite.find(a) == defSite.end()) {
+                defSite[a] = {n};
+            } else {
+                defSite[a].insert(n);
+            }
+        }
+    }
+    for (auto var:defSite) {
+        auto &a = var.first;
+        std::set<BasicBlock *> W = defSite[a];
+        while (!W.empty()) {
+            auto n = *W.begin();
+            W.erase(W.begin());
+            for (auto Y:n->DF) {
+                if (Y->Aphi.empty() || Y->Aphi.find(a) == Y->Aphi.end()) {
+                    //insert phi nodes
+                    Y->phi.emplace_back(Phi(Y->in.size()));
+                    Y->Aphi.insert(a);
+                    if (n->AOrig.empty() || n->AOrig.find(a) == n->AOrig.end()) {
+                        W.insert(Y);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CFG::buildSSA() {
+    computeDominator();
+    computeDominanceFrontier();
+    findAOrig();
+    insertPhi();
 }

@@ -45,6 +45,8 @@ namespace kcc {
         empty,
         break_placeholder,
         continue_placeholder,
+        func_begin,
+        func_end,
     };
     struct Version{
         int addr;
@@ -55,6 +57,7 @@ namespace kcc {
     struct Phi{
         Version result;
         std::vector<Version> param;
+        Phi(size_t nNodes){param.resize(nNodes);}
     };
     struct BasicBlock;
     struct IRNode{
@@ -64,7 +67,10 @@ namespace kcc {
         int c;
         double fval;
         int version;
+        std::string s;
         BasicBlock * bb;
+        IRNode(Opcode _op,const std::string&_s,int _a):op(_op),s(_s),a(_a){}
+        IRNode(Opcode _op,const std::string&_s):op(_op),s(_s){}
         IRNode(Opcode _op,int _a):op(_op),a(_a),bb(nullptr){}
         IRNode(Opcode _op,int _a,int _b,int _c):op(_op),a(_a),b(_b),c(_c),bb(nullptr){}
         IRNode(Opcode _op,int _a, int imm):op(_op),a(_a),b(imm),bb(nullptr){}
@@ -73,5 +79,17 @@ namespace kcc {
         std::vector<int> out;
         std::string dump()const;
     };
+    struct CFG;
+    struct Function{
+        std::vector<IRNode> ir;
+        CFG *generateCFG();
+        std::string name;
+        void assignEdgeToBB();
+        void findEdges();
+        void naive(CFG *);
+        Function(){}
+        Function(const std::string & _name):name(_name){}
+    };
+
 }
 #endif //KCC_IR_H

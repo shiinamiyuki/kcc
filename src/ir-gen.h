@@ -11,20 +11,11 @@
 
 namespace kcc {
     class IRGenerator : public Visitor {
-        std::vector<IRNode> ir;
+        std::vector<Function> funcs;
 
-        void findEdges();
 
-        void trace(CFG *, int idx);
-
-        void assignEdgeToBB();
-
-        void naive(CFG *);
 
     public:
-        friend class CFG;
-
-        CFG *generateCFG();
 
         void visit(For *aFor) override;
 
@@ -85,25 +76,27 @@ namespace kcc {
         void visit(FuncArgType *type) override;
 
         ~IRGenerator() override = default;
-
+        std::vector<IRNode> & ir(){return funcs.back().ir;}
         template<typename ...Args>
         void emit(Opcode op, Args... args) {
-            ir.emplace_back(IRNode(op, args...));
+            ir().emplace_back(IRNode(op, args...));
         }
 
         template<typename ...Args>
         void patch(int idx, Opcode op, Args... args) {
-            ir[idx] = (IRNode(op, args...));
+            ir()[idx] = (IRNode(op, args...));
         }
 
         void printIR() {
             int cnt = 0;
-            for (auto i: ir) {
+            for (auto i: ir()) {
                 println("{}: {}", cnt, i.dump());
                 cnt++;
             }
         }
+        void buildSSA();
     };
+
 
 
 

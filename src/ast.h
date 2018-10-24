@@ -405,6 +405,7 @@ namespace kcc {
 
     class FuncDefArg : public AST {
     public:
+
         const std::string kind() const override { return "FuncDefArg"; }
 
         void accept(Visitor *) override;
@@ -414,6 +415,7 @@ namespace kcc {
 
     class FuncDef : public AST {
     public:
+        unsigned int frameSize;
         const std::string kind() const override { return "FuncDef"; }
 
         void accept(Visitor *) override;
