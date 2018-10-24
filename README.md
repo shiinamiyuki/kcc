@@ -24,3 +24,8 @@ Because this is an optimizing compiler, which focuses on algorithm rather that t
 
 Which plaform is it targeting? </br>
 I am developing using Windows, so that will be the top priority.
+
+# Current Progress:
+What's wrong with the Chinese edition of <i>Modern Compiler Implementation in C</i>? The translation is bullshit.
+There is a lot of problems which variable renaming, which I'll fix up later.
+I have to spend more time dealing with cs post right now.
