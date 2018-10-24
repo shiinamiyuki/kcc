@@ -214,6 +214,8 @@ void CFG::rename() {
 }
 
 void CFG::rename(BasicBlock *n) {
+    if(n->renamed)return;
+    n->renamed = true;
     int i;
     for(auto& S:n->phi){
         auto a = S.result.addr;
@@ -230,14 +232,11 @@ void CFG::rename(BasicBlock *n) {
             S.version = i;
             a = S.b;
         }else if(S.op == Opcode::store){
-            i = stack[S.a].top();
-            S.version = i;
             a = S.a;
-        }
-        if(a>=0){
             count[a]++;
             i = count[a];
             stack[a].push(i);
+            S.version = i;
         }
     }
     std::vector<BasicBlock*> succ;
@@ -263,5 +262,18 @@ void CFG::rename(BasicBlock *n) {
     }
     for(auto X:succ){
         rename(X);
+    }
+
+    for(auto& S:n->phi){
+        auto a = S.result.addr;
+        stack[a].pop();
+    }
+    for(auto& S:n->block){
+        //S is not phi
+        int a = -1;
+        if(S.op == Opcode::store){
+            a = S.a;
+            stack[a].pop();
+        }
     }
 }

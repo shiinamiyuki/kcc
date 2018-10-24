@@ -33,6 +33,8 @@ namespace kcc {
         std::vector<BasicBlock *> DF, dom;
         Edge branchTrue, branchFalse;// for jmps, always take branchTrue
         BasicBlock *idom();
+        bool renamed;
+        BasicBlock():renamed(false){}
     };
 
     class CFG {

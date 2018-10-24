@@ -64,7 +64,7 @@ void kcc::Sema::visit(Number *number) {
 }
 
 void kcc::Sema::visit(Return *aReturn) {
-
+    aReturn->first()->accept(this);
 }
 
 void kcc::Sema::visit(Empty *empty) {
