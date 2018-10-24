@@ -7,7 +7,7 @@ Stages: </br>
 2.  Parser (supports basic syntax)
 3.  Semantic Analysis (only the basic type checks)
 4.  Three-Address form IR Generation (supports local variables, if, while, for)
-5.  SSA-based IR Generation (CFG generation is done. Now trying to implement the dominance frontier algorithm)
+5.  SSA-based IR Generation (Fixing bugs with renaming)
 6.  Optimizations
 7.  Graph-Coloring Register Allocation
 8.  x64 Assembly Generation
@@ -24,3 +24,8 @@ Because this is an optimizing compiler, which focuses on algorithm rather that t
 
 Which plaform is it targeting? </br>
 I am developing using Windows, so that will be the top priority.
+
+# Current Progress:
+What's wrong with the Chinese edition of <i>Modern Compiler Implementation in C</i>? The translation is bullshit.
+There is a lot of problems which variable renaming, which I'll fix up later.
+I have to spend more time dealing with cs post right now.
