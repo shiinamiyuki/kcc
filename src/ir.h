@@ -57,7 +57,13 @@ namespace kcc {
     struct Phi{
         Version result;
         std::vector<Version> param;
-        Phi(size_t nNodes){param.resize(nNodes);}
+        Phi(int addr,size_t nNodes):result(addr,-1){
+            param.resize(nNodes);
+            for(auto& i:param){
+                i.addr = addr;
+            }
+        }
+        std::string dump()const;
     };
     struct BasicBlock;
     struct IRNode{

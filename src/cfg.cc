@@ -15,8 +15,10 @@ void CFG::dump() {
         auto id = getId(i);
         std::string s;
         s.append(format("id={}\n", id));
-        if(!i->phi.empty()){
-            s.append(format("phi={}\n",i->phi.size()));
+        if (!i->phi.empty()) {
+            for(auto phi:i->phi) {
+                s.append(phi.dump()).append("\n");
+            }
         }
         for (const auto &stmt:i->block) {
             s.append(stmt.dump()).append("\n");
@@ -182,7 +184,7 @@ void CFG::insertPhi() {
             for (auto Y:n->DF) {
                 if (Y->Aphi.empty() || Y->Aphi.find(a) == Y->Aphi.end()) {
                     //insert phi nodes
-                    Y->phi.emplace_back(Phi(Y->in.size()));
+                    Y->phi.emplace_back(Phi(a,Y->in.size()));
                     Y->Aphi.insert(a);
                     if (n->AOrig.empty() || n->AOrig.find(a) == n->AOrig.end()) {
                         W.insert(Y);
@@ -198,4 +200,68 @@ void CFG::buildSSA() {
     computeDominanceFrontier();
     findAOrig();
     insertPhi();
+    rename();
+}
+
+void CFG::rename() {
+    for(auto& var:defSite){
+        auto a = var.first;
+        count[a] = 0;
+        stack[a] = {};
+        stack[a].push(0);
+    }
+    rename(allBlocks[0]);
+}
+
+void CFG::rename(BasicBlock *n) {
+    int i;
+    for(auto& S:n->phi){
+        auto a = S.result.addr;
+        count[a]++;
+        i = count[a];
+        stack[a].push(i);
+        S.result.ver = i;
+    }
+    for(auto& S:n->block){
+        //S is not phi
+        int a = -1;
+        if(S.op == Opcode::load){
+            i = stack[S.b].top();
+            S.version = i;
+            a = S.b;
+        }else if(S.op == Opcode::store){
+            i = stack[S.a].top();
+            S.version = i;
+            a = S.a;
+        }
+        if(a>=0){
+            count[a]++;
+            i = count[a];
+            stack[a].push(i);
+        }
+    }
+    std::vector<BasicBlock*> succ;
+    if(!n->branchTrue.empty()){
+        succ.emplace_back(n->branchTrue.to);
+    }
+    if(!n->branchFalse.empty()){
+        succ.emplace_back(n->branchFalse.to);
+    }
+    for(BasicBlock* Y:succ) {
+        int j;
+        for (j = 0; j < Y->in.size(); j++) {
+            if (Y->in[j].from == n) {
+                break;
+            }
+        }
+        assert(j != Y->in.size());
+        for (auto& p:Y->phi) {
+            assert(j < p.param.size());
+            i = stack[p.param[j].addr].top();
+            p.param[j].ver = i;
+        }
+    }
+    for(auto X:succ){
+        rename(X);
+    }
 }

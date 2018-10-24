@@ -4,6 +4,7 @@
 
 #include <list>
 #include <vector>
+#include <stack>
 #include <memory>
 #include <string>
 #include <unordered_map>

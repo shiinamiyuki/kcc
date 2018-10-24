@@ -65,9 +65,9 @@ std::string kcc::IRNode::dump() const {
         case Opcode::branch:
             return format("branch t{}, %true. {}, %false. {}",a,b,c);
         case Opcode ::load:
-            return format("t{} = [{}]",a,b);
+            return format("t{} = [{}]_{}",a,b,version);
         case Opcode::store:
-            return format("[{}] = t{}",a,b);
+            return format("[{}]_{} = t{}",a,version,b);
         case Opcode::empty:
             return std::string("end");
         case Opcode::ret:
@@ -150,4 +150,13 @@ void Function::assignEdgeToBB() {
             }
         }
     }
+}
+
+std::string Phi::dump() const {
+    std::string s = format("[{}]_{} = phi(",result.addr,result.ver);
+    for(auto i:param){
+        s.append(format("[{}]_{},",i.addr,i.ver));
+    }
+    s.append(")");
+    return s;
 }
