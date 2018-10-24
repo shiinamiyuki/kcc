@@ -7,7 +7,7 @@ Stages: </br>
 2.  Parser (supports basic syntax)
 3.  Semantic Analysis (only the basic type checks)
 4.  Three-Address form IR Generation (supports local variables, if, while, for)
-5.  SSA-based IR Generation (CFG generation is done. Now trying to implement the dominance frontier algorithm)
+5.  SSA-based IR Generation (Fixing bugs with renaming)
 6.  Optimizations
 7.  Graph-Coloring Register Allocation
 8.  x64 Assembly Generation
