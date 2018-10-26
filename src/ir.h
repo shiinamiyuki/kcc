@@ -6,9 +6,11 @@
 #define KCC_IR_H
 
 #include "kcc.h"
+
 namespace kcc {
     // op A B C
     enum class Opcode {
+        nop,
         loadGlobal,
         storeGlobal,
         store,
@@ -48,25 +50,43 @@ namespace kcc {
         func_begin,
         func_end,
     };
-    struct Version{
+
+    struct Version {
         int addr;
         int ver;
-        Version(int _addr,int _ver):addr(_addr),ver(_ver){ }
-        Version():ver(-1){}
+
+        Version(int _addr, int _ver) : addr(_addr), ver(_ver) {}
+
+        Version() : ver(-1) {}
     };
-    struct Phi{
+
+    struct Phi {
         Version result;
         std::vector<Version> param;
-        Phi(int addr,size_t nNodes):result(addr,-1){
+
+        Phi(int addr, size_t nNodes) : result(addr, -1) {
             param.resize(nNodes);
-            for(auto& i:param){
+            for (auto &i:param) {
                 i.addr = addr;
             }
         }
-        std::string dump()const;
+
+        std::string dump() const;
     };
+
     struct BasicBlock;
-    struct IRNode{
+
+    template<typename T>
+    struct UseDef {
+        T *def;
+        std::vector<T *> use;
+
+        UseDef() { def = nullptr; }
+
+        UseDef(T *u, T *d) : def(d) { use.emplace_back(u); }
+    };
+
+    struct IRNode {
         Opcode op;
         int a;
         int b;
@@ -74,27 +94,48 @@ namespace kcc {
         double fval;
         int version;
         std::string s;
-        BasicBlock * bb;
-        IRNode(Opcode _op,const std::string&_s,int _a):op(_op),s(_s),a(_a){}
-        IRNode(Opcode _op,const std::string&_s):op(_op),s(_s){}
-        IRNode(Opcode _op,int _a):op(_op),a(_a),bb(nullptr){}
-        IRNode(Opcode _op,int _a,int _b,int _c):op(_op),a(_a),b(_b),c(_c),bb(nullptr){}
-        IRNode(Opcode _op,int _a, int imm):op(_op),a(_a),b(imm),bb(nullptr){}
-        IRNode(Opcode _op,int _a,double f):op(_op),a(_a),fval(f),bb(nullptr){}
+        BasicBlock *bb;
+        UseDef<IRNode> useDef;
+
+        IRNode(Opcode _op, const std::string &_s, int _a) : op(_op), s(_s), a(_a) {}
+
+        IRNode(Opcode _op, const std::string &_s) : op(_op), s(_s) {}
+
+        IRNode(Opcode _op, int _a) : op(_op), a(_a), bb(nullptr) {}
+
+        IRNode(Opcode _op, int _a, int _b, int _c) : op(_op), a(_a), b(_b), c(_c), bb(nullptr) {}
+
+        IRNode(Opcode _op, int _a, int imm) : op(_op), a(_a), b(imm), bb(nullptr) {}
+
+        IRNode(Opcode _op, int _a, double f) : op(_op), a(_a), fval(f), bb(nullptr) {}
+
         std::vector<int> in;
         std::vector<int> out;
-        std::string dump()const;
+
+        std::string dump() const;
+
+        void erase() { op = Opcode::nop; }
     };
+
     struct CFG;
-    struct Function{
+
+    struct Function {
         std::vector<IRNode> ir;
+        CFG *cfg;
+
         CFG *generateCFG();
+
         std::string name;
+
         void assignEdgeToBB();
+
         void findEdges();
+
         void naive(CFG *);
-        Function(){}
-        Function(const std::string & _name):name(_name){}
+
+        Function() {}
+
+        Function(const std::string &_name) : name(_name) {}
     };
 
 }

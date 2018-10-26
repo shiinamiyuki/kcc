@@ -23,7 +23,9 @@ void CFG::dump() {
         for (const auto &stmt:i->block) {
             s.append(stmt.dump()).append("\n");
         }
-
+        if(i->idom()){
+            s.append(format("idom={}\n", getId(i->idom())));
+        }
         if (!i->dom.empty()) {
             s.append("dom=");
             for (const auto f : i->dom) {
@@ -34,6 +36,13 @@ void CFG::dump() {
         if (!i->DF.empty()) {
             s.append("DF=");
             for (const auto f : i->DF) {
+                s.append(format("{} ", getId(f)));
+            }
+            s.append("\n");
+        }
+        if (!i->children.empty()) {
+            s.append("child=");
+            for (const auto f : i->children) {
                 s.append(format("{} ", getId(f)));
             }
             s.append("\n");
@@ -91,7 +100,7 @@ std::vector<T> Union(const std::vector<T> &A, const std::vector<T> &B) {
 void CFG::computeDominator() {
     auto n0 = allBlocks[0];
     for (auto n:allBlocks) {
-        if (n != n0) {
+        if (true || n != n0) {
             n->dom = allBlocks; //set all nodes as dominator
         }
     }
@@ -99,7 +108,7 @@ void CFG::computeDominator() {
     while (change) {
         change = false;
         for (auto n:allBlocks) {
-            if (n != n0) {
+            if (true || n != n0) {
                 std::vector<BasicBlock *> dom;
                 dom.emplace_back(n);
                 std::vector<BasicBlock *> I;
@@ -111,6 +120,7 @@ void CFG::computeDominator() {
                         I = p->dom;
                     } else {
                         I = Intersection(I, p->dom);
+                        // TODO : fix with std::set_intersection
                     }
                 }
                 dom = Union(dom, I);
@@ -140,17 +150,7 @@ void CFG::computeDominanceFrontier() {
 }
 
 BasicBlock *BasicBlock::idom() {
-    for (auto i: dom) {
-        if (!i->branchFalse.empty()) {
-            if (i->branchFalse.to == this)
-                return i;
-        }
-        if (!i->branchTrue.empty()) {
-            if (i->branchTrue.to == this)
-                return i;
-        }
-    }
-    return nullptr;
+    return parent;
 }
 
 void CFG::findAOrig() {
@@ -197,6 +197,7 @@ void CFG::insertPhi() {
 
 void CFG::buildSSA() {
     computeDominator();
+    computeDominatorTree();
     computeDominanceFrontier();
     findAOrig();
     insertPhi();
@@ -260,7 +261,7 @@ void CFG::rename(BasicBlock *n) {
             p.param[j].ver = i;
         }
     }
-    for(auto X:succ){
+    for(auto X:n->children){// TODO: replace with for child in children
         rename(X);
     }
 
@@ -269,7 +270,6 @@ void CFG::rename(BasicBlock *n) {
         stack[a].pop();
     }
     for(auto& S:n->block){
-        //S is not phi
         int a = -1;
         if(S.op == Opcode::store){
             a = S.a;
@@ -277,3 +277,37 @@ void CFG::rename(BasicBlock *n) {
         }
     }
 }
+
+void CFG::computeUseDef() {
+    for(auto n: allBlocks){
+
+    }
+}
+
+void CFG::optimize() {
+    computeUseDef();
+}
+
+void CFG::computeDominatorTree() {
+    for(auto n:allBlocks)
+        n->computeIdom();
+    for(auto n:allBlocks){
+        auto idom = n->idom();
+        if(idom)
+            idom->children.insert(n);
+    }
+}
+
+void BasicBlock::computeIdom() {
+    // find the dominator with most dominators
+    parent = nullptr;
+    int m = -1;
+    for(auto i: dom){
+        int s = i->dom.size();
+        if(s>m && i != this){
+            parent = i;
+            m = (int)i->dom.size();
+        }
+    }
+}
+

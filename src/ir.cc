@@ -97,7 +97,7 @@ void Function::findEdges() {
 
 CFG *Function::generateCFG() {
     findEdges();
-    auto cfg = new CFG();
+    cfg = new CFG();
     naive(cfg);
     assignEdgeToBB();
     return cfg;

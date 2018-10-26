@@ -31,10 +31,13 @@ namespace kcc {
         std::set<int> AOrig;
         std::set<int> Aphi;
         std::vector<BasicBlock *> DF, dom;
+        std::set<BasicBlock*> children;
+        BasicBlock * parent; // idom
         Edge branchTrue, branchFalse;// for jmps, always take branchTrue
         BasicBlock *idom();
         bool renamed;
         BasicBlock():renamed(false){}
+        void computeIdom();
     };
 
     class CFG {
@@ -44,10 +47,18 @@ namespace kcc {
         std::unordered_map<int, std::stack<int>> stack;
     public:
         friend class IRGenerator;
-
+        CFG(){allBlocks.emplace_back(new BasicBlock());}
         void addBasicBlock(BasicBlock *block) {
+            BasicBlock * root = nullptr;
             block->id = (int) allBlocks.size();
             allBlocks.push_back(block);
+            if(allBlocks.size() == 2){
+                root = allBlocks[0];
+                root->id = 0;
+                auto edge = Edge(root,allBlocks[1]);
+                root->branchTrue = edge;
+                allBlocks[1]->in.emplace_back(edge);
+            }
         }
 
         void dump();
@@ -55,7 +66,7 @@ namespace kcc {
         void computeDominator();
 
         void computeDominanceFrontier();
-
+        void computeDominatorTree();
         void findAOrig();
 
         void insertPhi();
@@ -65,6 +76,8 @@ namespace kcc {
         void rename(BasicBlock *n);
 
         void buildSSA();
+        void computeUseDef();
+        void optimize();
     };
 }
 #endif //KCC_CFG_H
