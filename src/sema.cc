@@ -131,9 +131,14 @@ void kcc::Sema::visit(CallExpression *expression) {
             expression->setType(nullptr);
             return;
         }
-        if (!isSameType(t, (Type *) arg->get(i))) {
+        auto ty = (Type *) arg->get(i)->getType();
+        if(!ty){
+            expression->setType(nullptr);
+            return;
+        }
+        if (!isSameType(t, ty)) {
             error(expression, "expecting type '{}' at {}th argument but found '{}'",
-                  getTypeRepr((Type *) arg->get(i)),
+                  getTypeRepr((Type *) ty),
                   i + 1,
                   getTypeRepr(t));
             expression->setType(nullptr);
@@ -180,6 +185,9 @@ void kcc::Sema::visit(DeclarationList *list) {
 
 void kcc::Sema::visit(Literal *literal) {
     literal->setType(makePointerType(makePrimitiveType("char")));
+    literal->scale = 1;
+    literal->setReg(alloc());
+    literal->isFloat = false;
 }
 
 static bool skipCheckIfNull(kcc::BinaryExpression *expr, kcc::Type *ty1, kcc::Type *ty2) {
@@ -382,6 +390,9 @@ kcc::VarInfo kcc::Sema::getVarInfo(Identifier *iden) {
         auto &scope = *iter;
         auto it = scope.find(s);
         if (it != scope.end()) {
+            if(iter == symbolTable.rend() -1){
+                iden->isGlobal = true;
+            }
             return it->second;
         }
     }

@@ -685,7 +685,37 @@ BinaryExpression *Parser::hackExpr(BinaryExpression *e) {
         e2->add(e3);
         return e2;
     } else {
-        return e;
+        //const folding
+        if(e->rhs()->kind() == Number().kind() && e->lhs()->kind() == Number().kind()){
+            Token::Type ty;
+            double result;
+            double a,b;
+            if(e->rhs()->getToken().type == Token::Type::Int &&
+                    e->lhs()->getToken().type == Token::Type::Int)
+                ty = Token::Type::Int;
+            else
+                ty = Token::Type::Float;
+            a = ((Number*)e->lhs())->getFloat();
+            b = ((Number*)e->rhs())->getFloat();
+            auto op = e->tok();
+            if( op == "+"){result = a+b;}
+            else if(op == "-"){result = a-b;}
+            else if(op == "*"){result = a*b;}
+            else if(op == "/"){result = a/b;}
+            else if(op == "%"){result = a/b;}
+            else return e;
+            if(ty == Token::Type::Int){
+                return (BinaryExpression*)makeNode<Number>(
+                        Token(ty,format("{}",(int)result),e->getToken().line,
+                                e->getToken().col));
+            }else{
+                return (BinaryExpression*)makeNode<Number>(
+                        Token(ty,format("{}",result),e->getToken().line,
+                              e->getToken().col));
+            }
+
+        }else
+            return e;
     }
 
 }

@@ -3,6 +3,7 @@
 //
 
 #include "ir-gen.h"
+#include "x64-gen.h"
 
 using namespace kcc;
 
@@ -11,7 +12,10 @@ void kcc::IRGenerator::visit(kcc::For *aFor) {
 }
 
 void kcc::IRGenerator::visit(kcc::Identifier *identifier) {
-    emit(Opcode::load, identifier->getReg(), identifier->getAddr());
+    if (identifier->isGlobal) {
+        emit(Opcode::loadGlobal, identifier->getReg(), identifier->tok());
+    } else
+        emit(Opcode::load, identifier->getReg(), identifier->getAddr());
 }
 
 void kcc::IRGenerator::visit(kcc::While *aWhile) {
@@ -26,7 +30,7 @@ void kcc::IRGenerator::visit(kcc::While *aWhile) {
 }
 
 void kcc::IRGenerator::visit(kcc::Block *block) {
-    for(auto i:*block){
+    for (auto i:*block) {
         i->accept(this);
     }
 }
@@ -38,7 +42,7 @@ void kcc::IRGenerator::visit(kcc::TopLevel *level) {
 void kcc::IRGenerator::visit(kcc::If *anIf) {
     anIf->cond()->accept(this);
     int cond = anIf->cond()->getReg();
-    int branchIdx = ir().size();
+    int branchIdx = (int)ir().size();
     emit(Opcode::branch, cond, 0, 0);
     anIf->body()->accept(this);
     int jmpIdx = (int) ir().size();
@@ -65,7 +69,7 @@ void kcc::IRGenerator::visit(kcc::Number *number) {
 
 void kcc::IRGenerator::visit(kcc::Return *aReturn) {
     aReturn->first()->accept(this);
-    emit(Opcode::ret, aReturn->getReg());
+    emit(Opcode::ret, aReturn->first()->getReg());
 }
 
 void kcc::IRGenerator::visit(kcc::Empty *empty) {
@@ -85,7 +89,9 @@ void kcc::IRGenerator::visit(kcc::ArrayType *type) {
 }
 
 void kcc::IRGenerator::visit(kcc::ArgumentExepressionList *list) {
-
+    for (auto i:*list) {
+        i->accept(this);
+    }
 }
 
 void kcc::IRGenerator::visit(kcc::FuncDefArg *arg) {
@@ -94,12 +100,25 @@ void kcc::IRGenerator::visit(kcc::FuncDefArg *arg) {
 
 void kcc::IRGenerator::visit(kcc::FuncDef *def) {
     auto funcName = def->name();
-    funcs.emplace_back(Function(funcName));
+    funcs.emplace_back(Function(funcName,    def->frameSize));
     def->block()->accept(this);
 }
 
 void kcc::IRGenerator::visit(kcc::CallExpression *expression) {
-
+    auto arg = expression->arg();
+    arg->accept(this);
+    int a = 0, b = 0;
+    for (auto i:*arg) {
+        if (i->isFloat) {
+            emit(Opcode::pushf, i->getReg(), a++);
+        } else {
+            emit(Opcode::pushi, i->getReg(), b++);
+        }
+    }
+    auto callee = expression->callee();
+    if(callee->kind() == Identifier().kind() && callee->isGlobal) {
+        emit(Opcode::callGlobal,callee->tok());
+    }
 }
 
 void kcc::IRGenerator::visit(kcc::CastExpression *expression) {
@@ -119,7 +138,7 @@ void kcc::IRGenerator::visit(kcc::DeclarationList *list) {
 }
 
 void kcc::IRGenerator::visit(kcc::Literal *literal) {
-
+    emit(Opcode::sconst, literal->getReg(), literal->tok());
 }
 
 void kcc::IRGenerator::visit(kcc::BinaryExpression *expression) {
@@ -227,10 +246,16 @@ void kcc::IRGenerator::visit(kcc::FuncArgType *type) {
 }
 
 void IRGenerator::buildSSA() {
-    for(auto func:funcs){
+    for (auto func:funcs) {
         auto cfg = func.generateCFG();
         cfg->buildSSA();
         cfg->dump();
+    }
+}
+
+void IRGenerator::gen(DirectCodeGen &generator) {
+    for (auto &f:funcs) {
+        generator.generateFunc(f);
     }
 }
 

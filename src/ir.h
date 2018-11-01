@@ -33,6 +33,7 @@ namespace kcc {
         branch,
         iconst,
         fconst,
+        sconst,
         fadd,
         fsub,
         fmul,
@@ -49,6 +50,9 @@ namespace kcc {
         continue_placeholder,
         func_begin,
         func_end,
+        pushi,
+        pushf,
+        callGlobal,
     };
 
     struct Version {
@@ -96,7 +100,7 @@ namespace kcc {
         std::string s;
         BasicBlock *bb;
         UseDef<IRNode> useDef;
-
+        IRNode(Opcode _op, int _a, const std::string &_s) : op(_op), s(_s), a(_a) {}
         IRNode(Opcode _op, const std::string &_s, int _a) : op(_op), s(_s), a(_a) {}
 
         IRNode(Opcode _op, const std::string &_s) : op(_op), s(_s) {}
@@ -121,6 +125,7 @@ namespace kcc {
 
     struct Function {
         std::vector<IRNode> ir;
+        unsigned int alloc;
         CFG *cfg;
 
         CFG *generateCFG();
@@ -135,7 +140,7 @@ namespace kcc {
 
         Function() {}
 
-        Function(const std::string &_name) : name(_name) {}
+        Function(const std::string &_name,int _a) : name(_name),alloc(_a) {}
     };
 
 }

@@ -11,6 +11,8 @@
 #include "visitor.h"
 
 kcc::AST::AST() {
+    isFloat = false;
+    isGlobal = false;
 }
 
 void kcc::AST::linkRec() {

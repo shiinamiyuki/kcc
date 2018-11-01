@@ -54,6 +54,7 @@ namespace kcc {
 
     public:
         bool isFloat;
+        bool isGlobal;
         unsigned int scale;
         void setType(Type *ty) {
             record.type = ty;
@@ -214,12 +215,24 @@ namespace kcc {
 
     class Number : public AST {
     public:
-
+        Number(){}
         explicit Number(const Token &t) { content = t; }
 
         const std::string kind() const override { return "Number"; }
 
         void accept(Visitor *) override;
+        int getInt(){
+            std::istringstream in(tok());
+            int i;
+            in >> i;
+            return i;
+        }
+        double getFloat(){
+            std::istringstream in(tok());
+            double i;
+            in >> i;
+            return i;
+        }
     };
 
     class Literal : public AST {

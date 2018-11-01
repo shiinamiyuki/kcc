@@ -9,10 +9,11 @@
 #include "ir.h"
 #include "cfg.h"
 
+;
 namespace kcc {
+    class DirectCodeGen;
     class IRGenerator : public Visitor {
         std::vector<Function> funcs;
-
 
 
     public:
@@ -76,7 +77,9 @@ namespace kcc {
         void visit(FuncArgType *type) override;
 
         ~IRGenerator() override = default;
-        std::vector<IRNode> & ir(){return funcs.back().ir;}
+
+        std::vector<IRNode> &ir() { return funcs.back().ir; }
+
         template<typename ...Args>
         void emit(Opcode op, Args... args) {
             ir().emplace_back(IRNode(op, args...));
@@ -94,10 +97,11 @@ namespace kcc {
                 cnt++;
             }
         }
+
         void buildSSA();
+
+        void gen(DirectCodeGen &generator);
     };
-
-
 
 
 }

@@ -16,6 +16,8 @@ std::string kcc::IRNode::dump() const {
             return format("t{} = ${}",a,b);
         case Opcode::fconst:
             return format("t{} = ${}",a,fval);
+        case Opcode::sconst:
+            return format("t{} = \"{}\"",a,s);
         case Opcode ::cvtf2i:
             return format("t{} = (int)t{}",a,b);
         case Opcode::cvti2f:
@@ -72,6 +74,12 @@ std::string kcc::IRNode::dump() const {
             return std::string("end");
         case Opcode::ret:
             return format("ret t{}", a);
+        case Opcode::pushi:
+            return format("pushi t{}", a);
+        case Opcode::pushf:
+            return format("pushf t{}", a);
+        case Opcode::callGlobal:
+            return format("call global {}", s);
         default:
             return format("unknown opcode {}",(int)op);
     }

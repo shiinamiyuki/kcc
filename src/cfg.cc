@@ -303,10 +303,10 @@ void BasicBlock::computeIdom() {
     parent = nullptr;
     int m = -1;
     for(auto i: dom){
-        int s = i->dom.size();
+        int s = (int)i->dom.size();
         if(s>m && i != this){
             parent = i;
-            m = (int)i->dom.size();
+            m = s;
         }
     }
 }

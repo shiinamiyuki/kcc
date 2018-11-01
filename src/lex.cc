@@ -275,27 +275,27 @@ Token Lexer::punctuator() {
 
 Token Lexer::string() {
     std::string s;
-    s += cur();
+  //  s += cur();
     char c = cur();
     consume();
     while (cur() != c) {
         if (cur() == '\\') {
             consume();
             if (cur() == '\\') {
-                s += '\\';
+                s += "\\\\";
             } else if (cur() == 'n') {
-                s += '\n';
+                s += "\\n";
             } else if (cur() == '"') {
-                s += '\"';
+                s += "\\\"";
             } else if (cur() == '\'') {
-                s += '\'';
+                s += "\\\'";
             }
         } else
             s += cur();
         consume();
     }
     consume();
-    s += c;
+   // s += c;
     if(s[0] == '\'' ){
         if(s.length()!=3)
             throw std::runtime_error(std::string("char literal to long"));

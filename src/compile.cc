@@ -3,7 +3,7 @@
 //
 
 #include "compile.h"
-
+#include "x64-gen.h"
 using namespace kcc;
 
 void kcc::Compiler::compileFile(const char *filename) {
@@ -22,11 +22,15 @@ void kcc::Compiler::compileFile(const char *filename) {
     Parser p(lex);
     auto ast = p.parse();
     ast->link();
- //   println("{}", ast->str());
+    //   println("{}", ast->str());
     Sema sema;
     ast->accept(&sema);
     IRGenerator irGenerator;
     ast->accept(&irGenerator);
     irGenerator.printIR();
-    irGenerator.buildSSA();
+    //  irGenerator.buildSSA();
+    DirectCodeGen gen;
+    irGenerator.gen(gen);
+    gen.writeFile("out");
+
 }
