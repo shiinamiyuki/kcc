@@ -1,3 +1,0 @@
-D:/repo/CLionProjects/kcc/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/repo/CLionProjects/kcc/cmake-build-debug/CMakeFiles/kcc.dir
-D:/repo/CLionProjects/kcc/cmake-build-debug/CMakeFiles/rebuild_cache.dir
