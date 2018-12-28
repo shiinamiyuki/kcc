@@ -13,8 +13,7 @@ void kcc::DirectCodeGen::generateFunc(Function &function) {
     iRegLevel = fRegLevel = 0;
     bytesForLocals = function.alloc;
     emit(".globl\t{}\n"
-         ".def\t{}\n"
-         ".seh_proc\t{}", function.name, function.name, function.name);
+         ".def\t{}\n", function.name, function.name);
     emit("{}:", function.name);
 
     emit(" pushq   %rbp\n"
@@ -112,7 +111,6 @@ void kcc::DirectCodeGen::generateFunc(Function &function) {
     emit("subq $64, %rsp");
     emit(" popq    %rbp\n"
          " retq");
-    emit(".seh_endproc");
 }
 
 

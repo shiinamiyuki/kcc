@@ -28,7 +28,7 @@ void kcc::Compiler::compileFile(const char *filename) {
     IRGenerator irGenerator;
     ast->accept(&irGenerator);
     irGenerator.printIR();
-    //  irGenerator.buildSSA();
+    irGenerator.buildSSA();return;
     DirectCodeGen gen;
     irGenerator.gen(gen);
     gen.writeFile("out");
