@@ -1,5 +1,4 @@
 # kcc (refactoring needed)
-冷静一下， 我要来填坑了</br>
 A small C Compiler (in progress) </br>
 This aims to be a full C11 compilant optimizing compiler.
 
@@ -27,6 +26,8 @@ Which plaform is it targeting? </br>
 I am developing using Windows, so that will be the top priority.
 
 # Current Progress:
+Jan 2019: Almost finished refactoring. (其实一直在摸也没改太多
+
 What's wrong with the Chinese edition of <i>Modern Compiler Implementation in C</i>? The translation is bullshit.
 There is a lot of problems which variable renaming, which I'll fix up later.
 I have to spend more time dealing with cs post right now.
