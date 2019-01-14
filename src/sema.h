@@ -11,20 +11,20 @@
 
 #define KCC_POINTER_SIZE 8u
 namespace kcc {
+
     struct VarInfo {
         Type *ty;
-        int addr;
+        Value addr;
         bool isGlobal;
         bool isTypedef;
 
         VarInfo() {
             ty = nullptr;
-            addr = false;
             isGlobal = false;
             isTypedef = false;
         }
 
-        VarInfo(Type *_ty, int _addr, bool _isGlobal, bool _isTypedef = false) {
+        VarInfo(Type *_ty, const Value &_addr, bool _isGlobal, bool _isTypedef = false) {
             ty = _ty;
             addr = _addr;
             isGlobal = _isGlobal;
@@ -55,6 +55,7 @@ namespace kcc {
     class Sema : public Visitor {
         SymbolTable symbolTable;
         int tCount;
+
         void pushScope() {
             symbolTable.emplace_back(Scope());
         }
@@ -63,7 +64,7 @@ namespace kcc {
             symbolTable.pop_back();
         }
 
-        StackFrame stackFrame;
+        StackFrame istackFrame, fstackFrame;
         std::unordered_map<std::string, unsigned int> typeSize;
 
         void addTypeSize(const std::string &, unsigned int);
@@ -94,13 +95,18 @@ namespace kcc {
 
         bool checkTypeCastable(CastExpression *, Type *, Type *);
 
-        Type *removeReference(Type*);
+        Type *removeReference(Type *);
 
         std::string getTypeRepr(Type *) const;
 
         void binaryExpressionAutoPromote(BinaryExpression *, Type *, Type *, bool intOnly = false,
                                          bool retInt = false);
-        int alloc(){return tCount++;}
+
+        Value alloc() {
+            // TODO: alloc according to type
+            return Value::makeIReg(tCount++);
+        }
+
     public:
         Sema();
 

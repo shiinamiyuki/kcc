@@ -16,7 +16,7 @@ void CFG::dump() {
         std::string s;
         s.append(format("id={}\n", id));
         if (!i->phi.empty()) {
-            for(auto phi:i->phi) {
+            for(const auto& phi:i->phi) {
                 s.append(phi.dump()).append("\n");
             }
         }
@@ -157,9 +157,9 @@ void CFG::findAOrig() {
     for (auto i:allBlocks) {
         for (auto stmt:i->block) {
             if (stmt.op == Opcode::store) {
-                i->AOrig.insert(stmt.a);
+                i->AOrig.insert(stmt.a.getAddress());
             } else if (stmt.op == Opcode::load) {
-                i->AOrig.insert(stmt.b);
+                i->AOrig.insert(stmt.b.getAddress());
             }
         }
     }
@@ -175,7 +175,7 @@ void CFG::insertPhi() {
             }
         }
     }
-    for (auto var:defSite) {
+    for (const auto& var:defSite) {
         auto &a = var.first;
         std::set<BasicBlock *> W = defSite[a];
         while (!W.empty()) {
@@ -229,11 +229,11 @@ void CFG::rename(BasicBlock *n) {
         //S is not phi
         int a = -1;
         if(S.op == Opcode::load){
-            i = stack[S.b].top();
+            i = stack[S.b.getAddress()].top();
             S.version = i;
-            a = S.b;
+            a = S.b.getAddress();
         }else if(S.op == Opcode::store){
-            a = S.a;
+            a = S.a.getAddress();
             count[a]++;
             i = count[a];
             stack[a].push(i);
@@ -272,7 +272,7 @@ void CFG::rename(BasicBlock *n) {
     for(auto& S:n->block){
         int a = -1;
         if(S.op == Opcode::store){
-            a = S.a;
+            a = S.a.getAddress();
             stack[a].pop();
         }
     }

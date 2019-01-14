@@ -33,11 +33,84 @@ namespace kcc {
 
     class Type;
 
+    struct Value {
+        enum Type {
+            None = 0,
+            Int = 1,
+            Float = 2,
+            Register = 4,
+            Imm = 8,
+            Mem = 16,
+        } type;
+        int offset;
+        double fImm;
+        int iImm;
+
+        Value() {
+            type = Type::None;
+        }
+
+        Value(Type t, int o) : type(t), offset(o) {}
+
+        explicit Value(int i) {
+            type = static_cast<Type>(Type::Imm | Type::Int);
+            iImm = i;
+        }
+
+        explicit Value(double i) {
+            type = static_cast<Type>(Type::Imm | Type::Float);
+            fImm = i;
+        }
+
+        int getAddress() const {
+            assert(isMemObj());
+            return offset;
+        }
+
+        int getReg() const {
+            assert(isRegister());
+            return offset;
+        }
+        int getImm()const{
+            assert(isImm());
+            return iImm;
+        }
+        bool isRegister() const { return type & Type::Register; }
+
+        bool isFloat() const { return type & Type::Float; }
+
+        bool isInt() const { return type & Type::Int; }
+
+        bool isMemObj() const { return type & Type::Mem; }
+
+        bool isImm() const { return type & Type::Imm; }
+
+        bool isNone() const { return type == Type::None; }
+
+        static Value makeIReg(int i) {
+            return Value(static_cast<Type>(Type::Int | Type::Register), i);
+        }
+
+        static Value makeFReg(int i) {
+            return Value(static_cast<Type>(Type::Float | Type::Register), i);
+        }
+
+        static Value makeIMem(int i) {
+            return Value(static_cast<Type>(Type::Int | Type::Mem), i);
+        }
+
+        static Value makeFMem(int i) {
+            return Value(static_cast<Type>(Type::Int | Type::Mem), i);
+        }
+
+    };
+
     struct Record {
         Type *type;
-        int addr;
-        int reg;
+        Value addr;
+        Value reg;
         bool isGlobal;
+
         Record() {
             type = nullptr;
         }
@@ -56,17 +129,21 @@ namespace kcc {
         bool isFloat;
         bool isGlobal;
         unsigned int scale;
+
         void setType(Type *ty) {
             record.type = ty;
         }
-        void setAddr(int a){
+
+        void setAddr(const Value &a) {
             record.addr = a;
         }
-        int getAddr()const{return record.addr;}
-        void setReg(int r){
-            record.reg = r;
-        }
-        int getReg()const{return record.reg;}
+
+        Value getAddr() const { return record.addr; }
+
+        Value getReg() const { return record.reg; }
+
+        void setReg(const Value &r) { record.reg = r; }
+
         Type *getType() const {
             return record.type;
         }
@@ -156,9 +233,12 @@ namespace kcc {
 
     class BinaryExpression : public AST {
     public:
-        explicit BinaryExpression(const Token &t) { content = t;scale = 1; }
+        explicit BinaryExpression(const Token &t) {
+            content = t;
+            scale = 1;
+        }
 
-        BinaryExpression(){scale =1;}
+        BinaryExpression() { scale = 1; }
 
         const std::string kind() const override { return "BinaryExpression"; }
 
@@ -215,19 +295,22 @@ namespace kcc {
 
     class Number : public AST {
     public:
-        Number(){}
+        Number() {}
+
         explicit Number(const Token &t) { content = t; }
 
         const std::string kind() const override { return "Number"; }
 
         void accept(Visitor *) override;
-        int getInt(){
+
+        int getInt() {
             std::istringstream in(tok());
             int i;
             in >> i;
             return i;
         }
-        double getFloat(){
+
+        double getFloat() {
             std::istringstream in(tok());
             double i;
             in >> i;
@@ -380,7 +463,7 @@ namespace kcc {
 
         AST *body() const { return second(); }
 
-        AST* elsePart()const{return third();}
+        AST *elsePart() const { return third(); }
     };
 
     class Block : public AST {
@@ -429,6 +512,7 @@ namespace kcc {
     class FuncDef : public AST {
     public:
         unsigned int frameSize;
+
         const std::string kind() const override { return "FuncDef"; }
 
         void accept(Visitor *) override;
@@ -482,4 +566,35 @@ namespace kcc {
         void accept(Visitor *) override;
     };
 }
+template<>
+struct Formatter<kcc::Value> {
+    const char *str(kcc::Value i) {
+        using kcc::Value;
+        std::string ty;
+        if (i.type & Value::Type::Register) {
+            if (i.type & Value::Type::Int) {
+                ty = format("i{}", i.offset);
+            } else {
+                assert(i.type & Value::Type::Float);
+                ty = format("f{}", i.offset);
+            }
+        } else if (i.type & Value::Type::Imm) {
+            if (i.type & Value::Type::Int) {
+                ty = format("{}", i.iImm);
+            } else {
+                assert(i.type & Value::Type::Float);
+                ty = format("{}", i.fImm);
+            }
+        } else if (i.type & Value::Type::Mem) {
+            if (i.type & Value::Type::Int) {
+                ty = format("i[{}]", i.offset);
+            } else {
+                assert(i.type & Value::Type::Float);
+                ty = format("f[{}]", i.offset);
+            }
+        }
+        return ty.c_str();
+    }
+};
+
 #endif /* AST_H_ */

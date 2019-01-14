@@ -14,6 +14,14 @@
 #include <set>
 #include <assert.h>
 #include <algorithm>
+#include <exception>
+
+
+#define AssertThrow(x) \
+    do{if(!(x)){ \
+        throw std::runtime_error("Assertion" #x " failed at " __FILE__ __LINE__);\
+    }}while(0)
+
 
 
 #endif /* KCC_H */

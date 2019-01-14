@@ -84,12 +84,16 @@ namespace kcc {
         void emit(Opcode op, Args... args) {
             ir().emplace_back(IRNode(op, args...));
         }
-
+        void emit(Opcode op) {
+            ir().emplace_back(IRNode(op));
+        }
         template<typename ...Args>
         void patch(int idx, Opcode op, Args... args) {
             ir()[idx] = (IRNode(op, args...));
         }
-
+        void patch(int idx, Opcode op) {
+            ir()[idx] = (IRNode(op));
+        }
         void printIR() {
             int cnt = 0;
             for (auto i: ir()) {
@@ -99,8 +103,6 @@ namespace kcc {
         }
 
         void buildSSA();
-
-        void gen(DirectCodeGen &generator);
     };
 
 

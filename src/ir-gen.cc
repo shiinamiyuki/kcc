@@ -3,7 +3,6 @@
 //
 
 #include "ir-gen.h"
-#include "x64-gen.h"
 
 using namespace kcc;
 
@@ -21,12 +20,12 @@ void kcc::IRGenerator::visit(kcc::Identifier *identifier) {
 void kcc::IRGenerator::visit(kcc::While *aWhile) {
     int begin = (int) ir().size();
     aWhile->cond()->accept(this);
-    int cond = aWhile->cond()->getReg();
+    auto cond = aWhile->cond()->getReg();
     int branchIdx = (int) ir().size();
-    emit(Opcode::branch, cond, 0, 0);
+    emit(Opcode::branch, cond);
     aWhile->body()->accept(this);
-    emit(Opcode::jmp, begin);
-    patch(branchIdx, Opcode::branch, cond, branchIdx + 1, ir().size());
+    emit(Opcode::jmp, Value(begin));
+    patch(branchIdx, Opcode::branch, cond, Value(branchIdx + 1), Value((int)ir().size()));
 }
 
 void kcc::IRGenerator::visit(kcc::Block *block) {
@@ -41,18 +40,18 @@ void kcc::IRGenerator::visit(kcc::TopLevel *level) {
 
 void kcc::IRGenerator::visit(kcc::If *anIf) {
     anIf->cond()->accept(this);
-    int cond = anIf->cond()->getReg();
+    auto cond = anIf->cond()->getReg();
     int branchIdx = (int)ir().size();
-    emit(Opcode::branch, cond, 0, 0);
+    emit(Opcode::branch, cond);
     anIf->body()->accept(this);
     int jmpIdx = (int) ir().size();
-    emit(Opcode::jmp, 0);
+    emit(Opcode::jmp, Value(0));
     int a = (int) ir().size();
     if (anIf->size() == 3) {
         anIf->elsePart()->accept(this);
     }
-    patch(branchIdx, Opcode::branch, cond, branchIdx + 1, a);
-    patch(jmpIdx, Opcode::jmp, ir().size());
+    patch(branchIdx, Opcode::branch, cond, Value(branchIdx + 1), Value(a));
+    patch(jmpIdx, Opcode::jmp, Value((int)ir().size()));
 
 }
 
@@ -62,9 +61,9 @@ void kcc::IRGenerator::visit(kcc::TernaryExpression *expression) {
 
 void kcc::IRGenerator::visit(kcc::Number *number) {
     if (number->isFloat)
-        emit(Opcode::fconst, number->getReg(), std::stod(number->tok()));
+        emit(Opcode::fconst, number->getReg(), Value(std::stod(number->tok())));
     else
-        emit(Opcode::iconst, number->getReg(), std::stoi(number->tok()));
+        emit(Opcode::iconst, number->getReg(), Value(std::stoi(number->tok())));
 }
 
 void kcc::IRGenerator::visit(kcc::Return *aReturn) {
@@ -110,9 +109,9 @@ void kcc::IRGenerator::visit(kcc::CallExpression *expression) {
     int a = 0, b = 0;
     for (auto i:*arg) {
         if (i->isFloat) {
-            emit(Opcode::pushf, i->getReg(), a++);
+            emit(Opcode::pushf, i->getReg(), Value(a++));
         } else {
-            emit(Opcode::pushi, i->getReg(), b++);
+            emit(Opcode::pushi, i->getReg(), Value(b++));
         }
     }
     auto callee = expression->callee();
@@ -250,12 +249,6 @@ void IRGenerator::buildSSA() {
         auto cfg = func.generateCFG();
         cfg->buildSSA();
         cfg->dump();
-    }
-}
-
-void IRGenerator::gen(DirectCodeGen &generator) {
-    for (auto &f:funcs) {
-        generator.generateFunc(f);
     }
 }
 

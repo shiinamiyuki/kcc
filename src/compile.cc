@@ -3,7 +3,6 @@
 //
 
 #include "compile.h"
-#include "x64-gen.h"
 using namespace kcc;
 
 void kcc::Compiler::compileFile(const char *filename) {
@@ -28,9 +27,5 @@ void kcc::Compiler::compileFile(const char *filename) {
     IRGenerator irGenerator;
     ast->accept(&irGenerator);
     irGenerator.printIR();
-    irGenerator.buildSSA();return;
-    DirectCodeGen gen;
-    irGenerator.gen(gen);
-    gen.writeFile("out");
-
+    irGenerator.buildSSA();
 }

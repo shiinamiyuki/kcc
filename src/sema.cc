@@ -96,14 +96,15 @@ void kcc::Sema::visit(FuncDefArg *arg) {
 }
 
 void kcc::Sema::visit(FuncDef *def) {
-    stackFrame.reset();
+    istackFrame.reset();
+    fstackFrame.reset();
     Type *ty = def->extractCallSignature();
     addGlobalSymbol(def->name(), ty);
     pushScope();
     def->arg()->accept(this);
     def->block()->accept(this);
     popScope();
-    def->frameSize = stackFrame.bytesAllocated;
+    def->frameSize = istackFrame.bytesAllocated + fstackFrame.bytesAllocated;
 }
 
 void kcc::Sema::visit(CallExpression *expression) {
@@ -346,7 +347,7 @@ void kcc::Sema::visit(FuncArgType *type) {
 }
 
 void kcc::Sema::addGlobalSymbol(const std::string &s, kcc::Type *ty) {
-    symbolTable[0][s] = VarInfo(ty, 0, true);
+    symbolTable[0][s] = VarInfo(ty, Value(), true);
 }
 
 kcc::Sema::Sema() {
@@ -361,10 +362,15 @@ kcc::Sema::Sema() {
 
 void kcc::Sema::addSymbol(const std::string &v, kcc::Type *ty, bool isTypedef) {
     auto sz = getTypeSize(ty);
-    VarInfo var(ty, stackFrame.bytesAllocated, false, isTypedef);
-    //  println("symbol '{}' added, at offset {}",v,(int)stackFrame.bytesAllocated);
+    VarInfo var;
+    if(isFloat(ty)) {
+        var = VarInfo(ty, Value(Value::Type::Float,fstackFrame.bytesAllocated), false, isTypedef);
+        fstackFrame.add(sz);
+    }else{
+        var = VarInfo(ty, Value(Value::Type::Float,istackFrame.bytesAllocated), false, isTypedef);
+        istackFrame.add(sz);
+    }
     symbolTable.back()[v] = var;
-    stackFrame.add(sz);
 }
 
 void kcc::Sema::addTypeSize(const std::string &s, unsigned int sz) {

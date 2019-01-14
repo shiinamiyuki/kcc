@@ -6,6 +6,7 @@
 #define KCC_IR_H
 
 #include "kcc.h"
+#include "ast.h"
 
 namespace kcc {
     // op A B C
@@ -80,38 +81,39 @@ namespace kcc {
 
     struct BasicBlock;
 
-    template<typename T>
-    struct UseDef {
-        T *def;
-        std::vector<T *> use;
-
-        UseDef() { def = nullptr; }
-
-        UseDef(T *u, T *d) : def(d) { use.emplace_back(u); }
-    };
+//    template<typename T>
+//    struct UseDef {
+//        T *def;
+//        std::vector<T *> use;
+//
+//        UseDef() { def = nullptr; }
+//
+//        UseDef(T *u, T *d) : def(d) { use.emplace_back(u); }
+//    };
 
     struct IRNode {
         Opcode op;
-        int a;
-        int b;
-        int c;
-        double fval;
+        Value a;
+        Value b;
+        Value c;
         int version;
         std::string s;
         BasicBlock *bb;
-        UseDef<IRNode> useDef;
-        IRNode(Opcode _op, int _a, const std::string &_s) : op(_op), s(_s), a(_a) {}
-        IRNode(Opcode _op, const std::string &_s, int _a) : op(_op), s(_s), a(_a) {}
+
+        //  UseDef<IRNode> useDef;
+        IRNode(Opcode _op, Value _a, const std::string &_s) : op(_op), s(_s), a(_a) {}
+
+        IRNode(Opcode _op, const std::string &_s, Value _a) : op(_op), s(_s), a(_a) {}
 
         IRNode(Opcode _op, const std::string &_s) : op(_op), s(_s) {}
 
-        IRNode(Opcode _op, int _a) : op(_op), a(_a), bb(nullptr) {}
+        IRNode(Opcode _op) : op(_op) {}
 
-        IRNode(Opcode _op, int _a, int _b, int _c) : op(_op), a(_a), b(_b), c(_c), bb(nullptr) {}
+        IRNode(Opcode _op, Value _a) : op(_op), a(_a), bb(nullptr) {}
 
-        IRNode(Opcode _op, int _a, int imm) : op(_op), a(_a), b(imm), bb(nullptr) {}
+        IRNode(Opcode _op, Value _a, Value _b, Value _c) : op(_op), a(_a), b(_b), c(_c), bb(nullptr) {}
 
-        IRNode(Opcode _op, int _a, double f) : op(_op), a(_a), fval(f), bb(nullptr) {}
+        IRNode(Opcode _op, Value _a, Value _b) : op(_op), a(_a), b(_b), bb(nullptr) {}
 
         std::vector<int> in;
         std::vector<int> out;
@@ -140,7 +142,7 @@ namespace kcc {
 
         Function() {}
 
-        Function(const std::string &_name,int _a) : name(_name),alloc(_a) {}
+        Function(const std::string &_name, int _a) : name(_name), alloc(_a) {}
     };
 
 }
