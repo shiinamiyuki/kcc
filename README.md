@@ -1,8 +1,11 @@
-# kcc (refactoring needed)
+# 摸鱼一时爽，一直摸一直爽
+
+# kcc
 A small C Compiler (in progress) </br>
 This aims to be a full C11 compilant optimizing compiler.
 
-Stages: </br>
+
+## Stages: </br>
 1.  Lexer (almost done, without preprocessor)
 2.  Parser (supports basic syntax)
 3.  Semantic Analysis (only the basic type checks)
