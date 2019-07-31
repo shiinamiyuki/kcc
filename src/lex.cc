@@ -7,7 +7,7 @@
 
 
 #include "lex.h"
-#include "format.h"
+#include "fmt/format.h"
 using namespace kcc;
 Token::Token(Type t, const std::string to, int l, int c) {
     type = t;
@@ -299,7 +299,7 @@ Token Lexer::string() {
     if(s[0] == '\'' ){
         if(s.length()!=3)
             throw std::runtime_error(std::string("char literal to long"));
-        return makeToken(Token::Type::Int,format("{}",(int)s[1]),line, col);
+        return makeToken(Token::Type::Int,fmt::format("{}",(int)s[1]),line, col);
     }
 
     return makeToken(Token::Type::String, s, line, col);

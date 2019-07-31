@@ -1,7 +1,14 @@
-#include <iostream>
 #include "compile.h"
+#include "type.hpp"
+
+
 int main() {
-    kcc::Compiler compiler;
-    compiler.compileFile("..\\test.c");
-    return 0;
+	try {
+		kcc::Compiler compiler;
+		compiler.compileFile(R"(C:\Users\xiaoc\source\repos\kcc\test.c)");
+		return 0;
+	}
+	catch (std::exception& e) {
+		std::cerr << e.what() << std::endl;
+	}
 }

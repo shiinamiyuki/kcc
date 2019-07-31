@@ -7,8 +7,8 @@
 
 #include "lex.h"
 #include "parse.h"
-#include "sema.h"
-#include "ir-gen.h"
+//#include "sema.h"
+//#include "ir-gen.h"
 namespace  kcc{
     class Compiler{
     public:

@@ -1,6 +1,13 @@
-cmake_minimum_required(VERSION 3.12)
-project(kcc)
+﻿# CMakeList.txt : CMake project for kcc, include source and define
+# project specific logic here.
+#
+cmake_minimum_required (VERSION 3.8)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
+# Add source to this project's executable.
+include_directories("src/")
+file(GLOB srcDir "src/*.cc")
+file(GLOB fmtDir "src/fmt/*.cc")
+add_executable (kcc ${srcDir} ${fmtDir})
 
-add_executable(kcc src/main.cc src/lex.cc src/format.cc src/ast.cc src/parse.cc src/sema.cc src/sema.h src/compile.cc src/compile.h src/type.cc src/type.h src/ir.cc src/ir.h src/ir-gen.cc src/ir-gen.h src/cfg.cc src/cfg.h)
+# TODO: Add tests and install targets if needed.

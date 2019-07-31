@@ -111,8 +111,8 @@ const Token &Parser::at(int idx) const {
     }
 }
 
-AST *Parser::parse() {
-    auto root = new TopLevel();
+AST::AST *Parser::parse() {
+    auto root = new AST::TopLevel();
     try {
         while (hasNext()) {
             root->add(parseGlobalDefs());
@@ -123,8 +123,8 @@ AST *Parser::parse() {
     return root;
 }
 
-AST *Parser::parseExpr(int lev) {
-    AST *result = parseCastExpr();
+AST::AST *Parser::parseExpr(int lev) {
+	AST::AST *result = parseCastExpr();
     while (hasNext()) {
         auto next = peek();
         if (opPrec.find(next.tok) == opPrec.end())
@@ -134,8 +134,8 @@ AST *Parser::parseExpr(int lev) {
                 result = parseTernary(result);
             } else {
                 consume();
-                AST *rhs = parseExpr(opAssoc[next.tok] + opPrec[next.tok]);
-                BinaryExpression *op = makeNode<BinaryExpression>(next);
+				AST::AST *rhs = parseExpr(opAssoc[next.tok] + opPrec[next.tok]);
+				AST::BinaryExpression *op = makeNode<AST::BinaryExpression>(next);
                 op->add(result);
                 op->add(rhs);
                 result = hackExpr(op);
@@ -146,18 +146,18 @@ AST *Parser::parseExpr(int lev) {
     return result;
 }
 
-AST *Parser::parseUnary() {
+AST::AST *Parser::parseUnary() {
     if (has("+") || has("-") || has("++") || has("--")
         || has("*")
         || has("&")
         || has("!")) {
         consume();
-        auto expr = makeNode<UnaryExpression>(cur());
+        auto expr = makeNode<AST::UnaryExpression>(cur());
         expr->add(parseCastExpr());
         return expr;
     } else if (has("sizeof")) {
         consume();
-        auto expr = makeNode<UnaryExpression>(cur());
+        auto expr = makeNode<AST::UnaryExpression>(cur());
         expect("(");
         expr->add(parseTypeName());
         expect(")");
@@ -166,7 +166,7 @@ AST *Parser::parseUnary() {
     return parsePostfix();
 }
 
-AST *Parser::parsePostfix() {
+AST::AST *Parser::parsePostfix() {
     auto postfix = parsePrimary();
     static std::set<std::string> postfixOperator = {
             "++", "--", "(", "[",//".","->"
@@ -177,23 +177,23 @@ AST *Parser::parsePostfix() {
             auto index = new IndexExpression();
             index->add(postfix);
             index->add(parseExpr(0));*/
-            auto add = makeNode<BinaryExpression>(Token(Token::Type::Punctuator,
+            auto add = makeNode<AST::BinaryExpression>(Token(Token::Type::Punctuator,
                                                         "+", -1, -1));
             add->add(postfix);
             add->add(parseExpr(0));
-            auto index = makeNode<UnaryExpression>(Token(Token::Type::Punctuator,
+            auto index = makeNode<AST::UnaryExpression>(Token(Token::Type::Punctuator,
                                                          "*", -1, -1));
             index->add(add);
             postfix = index;
             expect("]");
         } else if (has("(")) {
             auto arg = parseArgumentExpressionList();
-            auto call = makeNode<CallExpression>();
+            auto call = makeNode<AST::CallExpression>();
             call->add(postfix);
             call->add(arg);
             postfix = call;
         } else {
-            auto p = makeNode<PostfixExpr>(peek());
+            auto p = makeNode<AST::PostfixExpr>(peek());
             p->add(postfix);
             postfix = p;
             consume();
@@ -202,17 +202,17 @@ AST *Parser::parsePostfix() {
     return postfix;
 }
 
-AST *Parser::parsePrimary() {
+AST::AST *Parser::parsePrimary() {
     auto &next = peek();
     if (next.type == Token::Type::Identifier) {
         consume();
-        return makeNode<Identifier>(cur());
+        return makeNode<AST::Identifier>(cur());
     } else if (next.type == Token::Type::Int || next.type == Token::Type::Float) {
         consume();
-        return makeNode<Number>(cur());
+        return makeNode<AST::Number>(cur());
     } else if (next.type == Token::Type::String) {
         consume();
-        return makeNode<Literal>(cur());
+        return makeNode<AST::Literal>(cur());
     } else if (has("(")) {
         consume();
         auto expr = parseExpr(0);
@@ -223,9 +223,9 @@ AST *Parser::parsePrimary() {
     }
 }
 
-AST *Parser::parseTernary(AST *cond) {
+AST::AST *Parser::parseTernary(AST::AST *cond) {
     expect("?");
-    AST *ternary = makeNode<TernaryExpression>();
+	AST::AST *ternary = makeNode<AST::TernaryExpression>();
     ternary->add(cond);
     ternary->add(parseExpr(0));
     expect(":");
@@ -233,10 +233,10 @@ AST *Parser::parseTernary(AST *cond) {
     return ternary;
 }
 
-AST *Parser::parseCastExpr() {
+AST::AST *Parser::parseCastExpr() {
     if (has("(") && types.find(at(pos + 2).tok) != types.end()) {  //( kind ) cast_expr
         consume();
-        auto cast = makeNode<CastExpression>();
+        auto cast = makeNode<AST::CastExpression>();
         auto type = parseTypeSpecifier();
         declStack.emplace_back(type);
         parseAbstractDeclarator();
@@ -250,9 +250,9 @@ AST *Parser::parseCastExpr() {
         return parseUnary();
 }
 
-AST *Parser::parseArgumentExpressionList() {
+AST::AST *Parser::parseArgumentExpressionList() {
     expect("(");
-    auto arg = makeNode<ArgumentExepressionList>();
+    auto arg = makeNode<AST::ArgumentExepressionList>();
     while (hasNext() && !has(")")) {
         arg->add(parseExpr(0));
         if (has(")"))
@@ -263,10 +263,10 @@ AST *Parser::parseArgumentExpressionList() {
     return arg;
 }
 
-AST *Parser::parseBlock() {
+AST::AST *Parser::parseBlock() {
     if (has("{")) {
         consume();
-        auto block = makeNode<Block>();
+        auto block = makeNode<AST::Block>();
         while (hasNext() && !has("}")) {
             block->add(parseStmt());
         }
@@ -277,8 +277,8 @@ AST *Parser::parseBlock() {
     }
 }
 
-AST *Parser::parseIf() {
-    auto stmt = makeNode<If>();
+AST::AST *Parser::parseIf() {
+    auto stmt = makeNode<AST::If>();
     expect("if");
     expect("(");
     stmt->add(parseExpr(0));
@@ -291,8 +291,8 @@ AST *Parser::parseIf() {
     return stmt;
 }
 
-AST *Parser::parseWhile() {
-    auto w = makeNode<While>();
+AST::AST *Parser::parseWhile() {
+    auto w = makeNode<AST::While>();
     expect("while");
     expect("(");
     w->add(parseExpr(0));
@@ -303,7 +303,7 @@ AST *Parser::parseWhile() {
 
 #define IS_TYPE_SPECIFIER (types.find(peek().tok) != types.end())
 
-AST *Parser::parseStmt() {
+AST::AST *Parser::parseStmt() {
     if (has("if"))
         return parseIf();
     else if (has("while")) {
@@ -326,13 +326,13 @@ AST *Parser::parseStmt() {
 
 void Parser::expect(const std::string &token) {
     if (peek().tok != token) {
-        auto msg = format(
+        auto msg = fmt::format(
                 "'{}' expected but found '{}'", token, peek().tok
         );
         if (config[quitIfError]) {
             throw ParserException(msg, cur().line, cur().col);
         } else {
-            println("{}", msg);
+            fmt::print("{}\n", msg);
         }
     } else {
         consume();
@@ -343,9 +343,9 @@ bool Parser::has(const std::string &token) {
     return peek().tok == token;
 }
 
-AST *Parser::parseFuncDef() {
+AST::AST *Parser::parseFuncDef() {
     auto ty = parseTypeSpecifier();
-    auto func = makeNode<FuncDef>();
+    auto func = makeNode<AST::FuncDef>();
     func->add(ty);
     func->add(parsePrimary());
     func->add(parseFuncDefArg());
@@ -353,9 +353,9 @@ AST *Parser::parseFuncDef() {
     return func;
 }
 
-AST *Parser::parseFuncDefArg() {
+AST::AST *Parser::parseFuncDefArg() {
     expect("(");
-    auto arg = makeNode<FuncDefArg>();
+    auto arg = makeNode<AST::FuncDefArg>();
     while (hasNext() && !has(")")) {
         arg->add(parseParameterType()->first());
         if (has(")"))
@@ -366,13 +366,13 @@ AST *Parser::parseFuncDefArg() {
     return arg;
 }
 
-AST *Parser::parseReturn() {
+AST::AST *Parser::parseReturn() {
     expect("return");
     if (has(";")) {
         consume();
-        return makeNode<Return>();
+        return makeNode<AST::Return>();
     } else {
-        auto ret = makeNode<Return>();
+        auto ret = makeNode<AST::Return>();
         ret->add(parseExpr(0));
         expect(";");
         return ret;
@@ -388,21 +388,21 @@ AST *Parser::parseReturn() {
  *  array-declarator: '[' int-literal ']'
  *  function-declarator: '(' function-decl-arg ')'
  * */
-AST *Parser::parseTypeSpecifier() {
+AST::AST *Parser::parseTypeSpecifier() {
     if (IS_TYPE_SPECIFIER) {
         consume();
-        return makeNode<PrimitiveType>(cur());
+        return makeNode<AST::PrimitiveType>(cur());
     } else {
         return nullptr;
     }
 }
 
-AST *Parser::parseGlobalDefs() {
+AST::AST *Parser::parseGlobalDefs() {
     if (has("enum")) {
         return parseEnum();
     } else {
         auto result = parseDecl();
-        if (result->kind() != FuncDef().kind()) {
+        if (result->kind() != AST::FuncDef().kind()) {
             expect(";");
         }
         return result;
@@ -410,10 +410,10 @@ AST *Parser::parseGlobalDefs() {
 
 }
 
-AST *Parser::parseDecl() {
+AST::AST *Parser::parseDecl() {
     auto type = parseTypeSpecifier();
     declStack.emplace_back(type);
-    auto decl = makeNode<DeclarationList>();
+    auto decl = makeNode<AST::DeclarationList>();
     decl->add(parseDeclarationSpecifier());
     while (has(",")) {
         consume();
@@ -422,7 +422,7 @@ AST *Parser::parseDecl() {
     declStack.pop_back();
     if (has("{")) {
         if (decl->size() != 1) {
-            error(format("{}", "unexpected '{'"));
+            error(fmt::format("{}", "unexpected '{'"));
         } else {
             auto func = convertFuncTypetoFuncDef(decl->first());
             func->add(parseBlock());
@@ -433,10 +433,10 @@ AST *Parser::parseDecl() {
     return decl;
 }
 
-AST *Parser::convertFuncTypetoFuncDef(AST *decl) {
-    auto func = makeNode<FuncDef>();
+AST::AST *Parser::convertFuncTypetoFuncDef(AST::AST *decl) {
+    auto func = makeNode<AST::FuncDef>();
     auto functype = decl->first();
-    if (functype->kind() != FuncType().kind()) {
+    if (functype->kind() != AST::FuncType().kind()) {
         error("function expected");
     }
     func->add(functype->first());
@@ -445,7 +445,7 @@ AST *Parser::convertFuncTypetoFuncDef(AST *decl) {
     return func;
 }
 
-AST *Parser::parseTypeName() {
+AST::AST *Parser::parseTypeName() {
     auto type = parseTypeSpecifier();
     declStack.emplace_back(type);
     if(has("*")){
@@ -466,11 +466,11 @@ void Parser::parseAbstractDirectDeclarator() {
 
 void Parser::parseAbstractDeclarator() {
     if (has("*")) {
-        auto p = makeNode<PointerType>();
+        auto p = makeNode<AST::PointerType>();
         consume();
         while (has("*")) {
             consume();
-            auto p2 = makeNode<PointerType>();
+            auto p2 = makeNode<AST::PointerType>();
             p2->add(p);
             p = p2;
         }
@@ -481,7 +481,7 @@ void Parser::parseAbstractDeclarator() {
                 ptr->add(t);
                 break;
             } else {
-                ptr = dynamic_cast<PointerType *>(ptr->first());
+                ptr = dynamic_cast<AST::PointerType *>(ptr->first());
             }
         }
         declStack.emplace_back(p);
@@ -489,7 +489,7 @@ void Parser::parseAbstractDeclarator() {
 }
 
 
-AST *Parser::parseDeclarationSpecifier() {
+AST::AST *Parser::parseDeclarationSpecifier() {
     parseDeclarator();
     auto t = declStack.back();
     declStack.pop_back();
@@ -513,11 +513,11 @@ void Parser::parseDirectDeclarator() {
 
 void Parser::parseDeclarator() {
     if (has("*")) {
-        auto p = makeNode<PointerType>();
+        auto p = makeNode<AST::PointerType>();
         consume();
         while (has("*")) {
             consume();
-            auto p2 = makeNode<PointerType>();
+            auto p2 = makeNode<AST::PointerType>();
             p2->add(p);
             p = p2;
         }
@@ -530,7 +530,7 @@ void Parser::parseDeclarator() {
                 ptr->add(t);
                 break;
             } else {
-                ptr = static_cast<PointerType *>(ptr->first());
+                ptr = static_cast<AST::PointerType *>(ptr->first());
             }
         }
         declStack.emplace_back(p);
@@ -543,7 +543,7 @@ void Parser::parseDeclarator() {
 
 void Parser::parseArrayDeclarator() {
     expect("[");
-    ArrayType *arr;
+	AST::ArrayType *arr;
     if (!has("]")) {
         auto size = parsePrimary();
         if (size->kind() != "Number") {
@@ -551,13 +551,13 @@ void Parser::parseArrayDeclarator() {
         }
         int i;
         sscanf(size->getToken().tok.c_str(), "%d", &i);
-        arr = makeNode<ArrayType>(i);
+        arr = makeNode<AST::ArrayType>(i);
         if (i < 0) {
             error("none-negative integer expected in array declaration");
         }
 
     } else {
-        arr = makeNode<ArrayType>();
+        arr = makeNode<AST::ArrayType>();
     }
     expect("]");
     auto t = declStack.back();
@@ -569,7 +569,7 @@ void Parser::parseArrayDeclarator() {
 
 void Parser::parseFunctionDeclarator() {
 
-    auto func = makeNode<FuncType>();
+    auto func = makeNode<AST::FuncType>();
     auto t = declStack.back();
     declStack.pop_back();
     func->add(t);
@@ -592,40 +592,40 @@ void Parser::parseDirectDeclarator_() {
     }
 }
 
-AST* Parser::error(const std::string &message) {
+AST::AST* Parser::error(const std::string &message) {
     if (config[quitIfError]) {
         throw ParserException(message);
     } else {
-        println(message);
+        fmt::print("{}\n",message);
     }
     return nullptr;
 }
 
-AST *Parser::extractIdentifier(AST *ast) {
-    AST *ty = declStack.back();
+AST::AST *Parser::extractIdentifier(AST::AST *ast) {
+	AST::AST *ty = declStack.back();
     if (ast->kind() == "Identifier") {
-        auto decl = makeNode<Declaration>();
+        auto decl = makeNode<AST::Declaration>();
         decl->add(ty);
         decl->add(ast);
         return decl;
     } else {
-        AST *walker = ast;
+		AST::AST *walker = ast;
         while (walker->size() && (walker->first()->kind() != "Identifier")) {
             walker = walker->first();
         }
         auto iden = walker->first();
         walker->set(0, ty);
-        auto decl = makeNode<Declaration>();
+        auto decl = makeNode<AST::Declaration>();
         decl->add(ast);
         decl->add(iden);
         return decl;
     }
 }
 
-AST *Parser::parseFor() {
+AST::AST *Parser::parseFor() {
     expect("for");
     expect("(");
-    auto result = makeNode<For>();
+    auto result = makeNode<AST::For>();
     //init
     if (IS_TYPE_SPECIFIER) {
         result->add(parseDecl());
@@ -633,7 +633,7 @@ AST *Parser::parseFor() {
     } else {
         if (has(";")) {
             consume();
-            result->add(makeNode<Empty>());
+            result->add(makeNode<AST::Empty>());
         } else {
             result->add(parseExpr(0));
             expect(";");
@@ -641,7 +641,7 @@ AST *Parser::parseFor() {
     }
     //cond
     if (has(";")) {
-        result->add(makeNode<Empty>());
+        result->add(makeNode<AST::Empty>());
     } else {
         result->add(parseExpr(0));
 
@@ -649,7 +649,7 @@ AST *Parser::parseFor() {
     expect(";");
     //step
     if (has(")")) {
-        result->add(makeNode<Empty>());
+        result->add(makeNode<AST::Empty>());
     } else {
 
         result->add(parseExpr(0));
@@ -659,16 +659,16 @@ AST *Parser::parseFor() {
     return result;
 }
 
-AST *Parser::parseParameterType() {
+AST::AST *Parser::parseParameterType() {
     auto type = parseTypeSpecifier();
     declStack.emplace_back(type);
-    auto decl = makeNode<DeclarationList>();
+    auto decl = makeNode<AST::DeclarationList>();
     decl->add(parseDeclarationSpecifier());
     declStack.pop_back();
     return decl;
 }
 
-BinaryExpression *Parser::hackExpr(BinaryExpression *e) {
+AST::BinaryExpression *Parser::hackExpr(AST::BinaryExpression *e) {
     auto op = e->getToken().tok;
     if (op == "+=" || op == "-=" || op == "*=" || op == "/="
         || op == "%=" || op == "<<=" || op == ">>=") {
@@ -677,8 +677,8 @@ BinaryExpression *Parser::hackExpr(BinaryExpression *e) {
         t.tok = op;
         Token t2 = t;
         t2.tok = "=";
-        auto e2 = makeNode<BinaryExpression>(t2);
-        auto e3 = makeNode<BinaryExpression>(t);
+        auto e2 = makeNode<AST::BinaryExpression>(t2);
+        auto e3 = makeNode<AST::BinaryExpression>(t);
         e3->add(e->first());
         e3->add(e->second());
         e2->add(e->first());
@@ -686,7 +686,7 @@ BinaryExpression *Parser::hackExpr(BinaryExpression *e) {
         return e2;
     } else {
         //const folding
-        if(e->rhs()->kind() == Number().kind() && e->lhs()->kind() == Number().kind()){
+        if(e->rhs()->kind() == AST::Number().kind() && e->lhs()->kind() == AST::Number().kind()){
             Token::Type ty;
             double result;
             double a,b;
@@ -695,8 +695,8 @@ BinaryExpression *Parser::hackExpr(BinaryExpression *e) {
                 ty = Token::Type::Int;
             else
                 ty = Token::Type::Float;
-            a = ((Number*)e->lhs())->getFloat();
-            b = ((Number*)e->rhs())->getFloat();
+            a = ((AST::Number*)e->lhs())->getFloat();
+            b = ((AST::Number*)e->rhs())->getFloat();
             auto op = e->tok();
             if( op == "+"){result = a+b;}
             else if(op == "-"){result = a-b;}
@@ -705,12 +705,12 @@ BinaryExpression *Parser::hackExpr(BinaryExpression *e) {
             else if(op == "%"){result = a/b;}
             else return e;
             if(ty == Token::Type::Int){
-                return (BinaryExpression*)makeNode<Number>(
-                        Token(ty,format("{}",(int)result),e->getToken().line,
+                return (AST::BinaryExpression*)makeNode<AST::Number>(
+                        Token(ty,fmt::format("{}",(int)result),e->getToken().line,
                                 e->getToken().col));
             }else{
-                return (BinaryExpression*)makeNode<Number>(
-                        Token(ty,format("{}",result),e->getToken().line,
+                return (AST::BinaryExpression*)makeNode<AST::Number>(
+                        Token(ty,fmt::format("{}",result),e->getToken().line,
                               e->getToken().col));
             }
 
@@ -720,9 +720,9 @@ BinaryExpression *Parser::hackExpr(BinaryExpression *e) {
 
 }
 
-AST *Parser::parseEnum() {
+AST::AST *Parser::parseEnum() {
     expect("enum");
-    auto e = makeNode<Enum>();
+    auto e = makeNode<AST::Enum>();
     expect("{");
     while (hasNext() && !has("}")) {
         e->add(parseExpr(0));

@@ -9,7 +9,7 @@ void kcc::Compiler::compileFile(const char *filename) {
     std::string src;
     FILE *f = fopen(filename, "r");
     if (!f) {
-        fprintln(stderr, "{} does not exist", filename);
+        fmt::print(stderr, "{} does not exist\n", filename);
     }
     while (!feof(f)) {
         char c = (char) fgetc(f);
@@ -21,11 +21,12 @@ void kcc::Compiler::compileFile(const char *filename) {
     Parser p(lex);
     auto ast = p.parse();
     ast->link();
-    //   println("{}", ast->str());
-    Sema sema;
+    fmt::print("{}\n", ast->str());
+  /*  Sema sema;
     ast->accept(&sema);
     IRGenerator irGenerator;
     ast->accept(&irGenerator);
-    irGenerator.printIR();
-    irGenerator.buildSSA();
+    irGenerator.printIR();*/
+  //  irGenerator.buildSSA();
+
 }

@@ -8,18 +8,19 @@
 #ifndef PARSE_H_
 #define PARSE_H_
 
-#include "format.h"
+#include "kcc.h"
 #include "lex.h"
 #include "ast.h"
 #include "config.h"
 namespace kcc {
+
     class Parser {
         std::vector<Token> tokenStream;
         std::set<std::string> types;
         std::unordered_map<std::string, int> opPrec;
         std::unordered_map<std::string, int> opAssoc; //1 for left 0 for right
         std::set<std::string> typeSpecifiers;
-        std::vector<AST *> declStack;
+        std::vector<AST::AST *> declStack;
         std::unordered_map<std::string, int> enums;
         int pos;
         int ternaryPrec;
@@ -30,55 +31,55 @@ namespace kcc {
             return new T();
         }
 
-        AST *parseExpr(int);
+		AST::AST *parseExpr(int);
 
-        BinaryExpression *hackExpr(BinaryExpression *);
+		AST::BinaryExpression *hackExpr(AST::BinaryExpression *);
 
-        AST *parseUnary();
+		AST::AST *parseUnary();
 
-        AST *parsePostfix();
+		AST::AST *parsePostfix();
 
-        AST *parsePrimary();
+		AST::AST *parsePrimary();
 
-        AST *parseTernary(AST *cond);
+		AST::AST *parseTernary(AST::AST *cond);
 
-        AST *parseCastExpr();
+		AST::AST *parseCastExpr();
 
-        AST *parseArgumentExpressionList();
+		AST::AST *parseArgumentExpressionList();
 
-        AST *parseBlock();
+		AST::AST *parseBlock();
 
-        AST *parseIf();
+		AST::AST *parseIf();
 
-        AST *parseWhile();
+		AST::AST *parseWhile();
 
-        AST *parseStmt();
+		AST::AST *parseStmt();
 
-        AST *parseTypeSpecifier();
+		AST::AST *parseTypeSpecifier();
 
-        AST *parseParameterType();
+		AST::AST *parseParameterType();
 
-        AST *parseDecl();
+		AST::AST *parseDecl();
 
-        AST *parseEnum();
+		AST::AST *parseEnum();
 
-        AST *parseGlobalDefs();
+		AST::AST *parseGlobalDefs();
 
-        AST *parseDeclarationSpecifier();
+		AST::AST *parseDeclarationSpecifier();
 
-        AST *parseTypeName();
+		AST::AST *parseTypeName();
 
         void parseAbstractDirectDeclarator();
 
         void parseAbstractDeclarator();
 
-        AST *extractIdentifier(AST *);
+		AST::AST *extractIdentifier(AST::AST *);
 
         void parseDirectDeclarator();
 
         void parseDeclarator();
 
-        AST *convertFuncTypetoFuncDef(AST *);
+		AST::AST *convertFuncTypetoFuncDef(AST::AST *);
 
         void parseDirectDeclarator_();
 
@@ -86,13 +87,13 @@ namespace kcc {
 
         void parseFunctionDeclarator();
 
-        AST *parseFuncDef();
+		AST::AST *parseFuncDef();
 
-        AST *parseFuncDefArg();
+		AST::AST *parseFuncDefArg();
 
-        AST *parseReturn();
+		AST::AST *parseReturn();
 
-        AST *parseFor();
+		AST::AST *parseFor();
 
         void expect(const std::string &token);
 
@@ -124,9 +125,9 @@ namespace kcc {
             return pos + 1 < (int) tokenStream.size();
         }
 
-        AST* error(const std::string &message);
+		AST::AST* error(const std::string &message);
 
-        AST *parse();
+		AST::AST *parse();
     };
 
     class ParserException : public std::exception {
@@ -137,7 +138,7 @@ namespace kcc {
         }
 
         ParserException(const std::string &message, int line, int col) {
-            msg = format("{}:{}:error: {}", line, col, message);
+            msg = fmt::format("{}:{}:error: {}", line, col, message);
         }
 
         const char *what() {

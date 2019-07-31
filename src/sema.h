@@ -1,179 +1,45 @@
-//
-// Created by xiaoc on 2018/9/11.
-//
-
 #ifndef KCC_SEMA_H
 #define KCC_SEMA_H
 
 #include "visitor.h"
-#include "type.h"
-#include "format.h"
 
-#define KCC_POINTER_SIZE 8u
+
 namespace kcc {
-
-    struct VarInfo {
-        Type *ty;
-        Value addr;
-        bool isGlobal;
-        bool isTypedef;
-
-        VarInfo() {
-            ty = nullptr;
-            isGlobal = false;
-            isTypedef = false;
-        }
-
-        VarInfo(Type *_ty, const Value &_addr, bool _isGlobal, bool _isTypedef = false) {
-            ty = _ty;
-            addr = _addr;
-            isGlobal = _isGlobal;
-            isTypedef = _isTypedef;
-        }
-    };
-
-    struct Scope : public std::unordered_map<std::string, VarInfo> {
-
-    };
-    struct SymbolTable : public std::vector<Scope> {
-
-    };
-
-    struct StackFrame {
-        unsigned int bytesAllocated;
-
-        void reset() {
-            bytesAllocated = 0;
-        }
-
-        void add(unsigned int k) {
-            bytesAllocated += k;
-        }
-
-    };
-
-    class Sema : public Visitor {
-        SymbolTable symbolTable;
-        int tCount;
-
-        void pushScope() {
-            symbolTable.emplace_back(Scope());
-        }
-
-        void popScope() {
-            symbolTable.pop_back();
-        }
-
-        StackFrame istackFrame, fstackFrame;
-        std::unordered_map<std::string, unsigned int> typeSize;
-
-        void addTypeSize(const std::string &, unsigned int);
-
-        unsigned int getTypeSize(Type *);
-
-        VarInfo getVarInfo(Identifier *);
-
-        template<typename... Args>
-        void error(AST *ast, const char *message, Args... args) {
-            fprintln(stderr, "{}: error: {}", ast->getPos(), format(message, args...));
-        }
-
-        template<typename... Args>
-        void warning(AST *ast, const char *message, Args... args) {
-            fprintln(stderr, "{}: warning: {}", ast->getPos(), format(message, args...));
-        }
-
-        bool isArithmetic(Type *ty);
-
-        bool isInt(Type *);
-
-        bool isFloat(Type *);
-
-        bool isPointer(Type *);
-
-        bool isSameType(Type *, Type *);
-
-        bool checkTypeCastable(CastExpression *, Type *, Type *);
-
-        Type *removeReference(Type *);
-
-        std::string getTypeRepr(Type *) const;
-
-        void binaryExpressionAutoPromote(BinaryExpression *, Type *, Type *, bool intOnly = false,
-                                         bool retInt = false);
-
-        Value alloc() {
-            // TODO: alloc according to type
-            return Value::makeIReg(tCount++);
-        }
-
-    public:
-        Sema();
-
-        void addGlobalSymbol(const std::string &, Type *);
-
-        void addSymbol(const std::string &, Type *, bool isTypedef = false);
-
-        void visit(For *aFor) override;
-
-        void visit(Identifier *identifier) override;
-
-        void visit(While *aWhile) override;
-
-        void visit(Block *block) override;
-
-        void visit(TopLevel *root) override;
-
-        void visit(If *anIf) override;
-
-        void visit(TernaryExpression *expression) override;
-
-        void visit(Number *number) override;
-
-        void visit(Return *aReturn) override;
-
-        void visit(Empty *empty) override;
-
-        void visit(PrimitiveType *type) override;
-
-        void visit(PointerType *type) override;
-
-        void visit(ArrayType *type) override;
-
-        void visit(ArgumentExepressionList *list) override;
-
-        void visit(FuncDefArg *arg) override;
-
-        void visit(FuncDef *def) override;
-
-        void visit(CallExpression *expression) override;
-
-        void visit(CastExpression *expression) override;
-
-        void visit(IndexExpression *expression) override;
-
-        void visit(Declaration *declaration) override;
-
-        void visit(DeclarationList *list) override;
-
-        void visit(Literal *literal) override;
-
-        void visit(BinaryExpression *expression) override;
-
-        void visit(UnaryExpression *expression) override;
-
-        void pre(AST *ast) override;
-
-        void visit(Enum *anEnum) override;
-
-        void visit(FuncType *type) override;
-
-        void visit(PostfixExpr *expr) override;
-
-        void visit(FuncArgType *type) override;
-
-        ~Sema() override = default;
-    };
+	class Sema : public AST::Visitor{
+	public:
+		// Inherited via Visitor
+		virtual void visit(AST::For*) override;
+		virtual void visit(AST::Identifier*) override;
+		virtual void visit(AST::While*) override;
+		virtual void visit(AST::Block*) override;
+		virtual void visit(AST::TopLevel*) override;
+		virtual void visit(AST::If*) override;
+		virtual void visit(AST::TernaryExpression*) override;
+		virtual void visit(AST::Number*) override;
+		virtual void visit(AST::Return*) override;
+		virtual void visit(AST::Empty*) override;
+		virtual void visit(AST::PrimitiveType*) override;
+		virtual void visit(AST::PointerType*) override;
+		virtual void visit(AST::ArrayType*) override;
+		virtual void visit(AST::ArgumentExepressionList*) override;
+		virtual void visit(AST::FuncDefArg*) override;
+		virtual void visit(AST::FuncDef*) override;
+		virtual void visit(AST::CallExpression*) override;
+		virtual void visit(AST::CastExpression*) override;
+		virtual void visit(AST::IndexExpression*) override;
+		virtual void visit(AST::Declaration*) override;
+		virtual void visit(AST::DeclarationList*) override;
+		virtual void visit(AST::Literal*) override;
+		virtual void visit(AST::BinaryExpression*) override;
+		virtual void visit(AST::UnaryExpression*) override;
+		virtual void pre(AST::AST*) override;
+		virtual void visit(AST::Enum*) override;
+		virtual void visit(AST::FuncType*) override;
+		virtual void visit(AST::PostfixExpr*) override;
+		virtual void visit(AST::FuncArgType*) override;
+	};
 
 }
-#endif //KCC_SEMA_H
+
+
+#endif

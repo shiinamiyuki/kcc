@@ -15,11 +15,14 @@
 #include <assert.h>
 #include <algorithm>
 #include <exception>
+#include <chrono>
+#include <variant>
+#include "fmt/format.h"
 
-
+using namespace fmt;
 #define AssertThrow(x) \
     do{if(!(x)){ \
-        throw std::runtime_error("Assertion" #x " failed at " __FILE__ __LINE__);\
+        throw std::runtime_error(fmt::format("Assertion {} failed at {} {}", #x, __FILE__, __LINE__));\
     }}while(0)
 
 

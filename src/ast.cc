@@ -7,40 +7,40 @@
 
 
 #include "ast.h"
-#include "format.h"
+#include "fmt/format.h"
 #include "visitor.h"
 
-kcc::AST::AST() {
+kcc::AST::AST::AST() {
     isFloat = false;
     isGlobal = false;
 }
 
-void kcc::AST::linkRec() {
+void kcc::AST::AST::linkRec() {
     for (auto i : children) {
         i->parent = this;
         i->linkRec();
     }
 }
 
-kcc::AST::~AST() {
+kcc::AST::AST::~AST() {
     for (auto i:children) {
         delete i;
     }
     children.clear();
 }
 
-void kcc::AST::link() {
+void kcc::AST::AST::link() {
     parent = nullptr;
     linkRec();
 }
 
-std::string kcc::AST::info() const {
+std::string kcc::AST::AST::info() const {
     return format("{}[{}]\n", kind(), content.tok);
 }
 
-void kcc::AST::accept(kcc::Visitor *) {}
+void kcc::AST::AST::accept(kcc::AST::Visitor *) {}
 
-std::string kcc::AST::str(int depth) const {
+std::string kcc::AST::AST::str(int depth) const {
     std::string s = "";
     for (int i = 0; i < depth; i++)
         s.append("  ");
@@ -53,15 +53,15 @@ std::string kcc::AST::str(int depth) const {
     return s;
 }
 
-std::string kcc::ArrayType::info() const {
+std::string kcc::AST::ArrayType::info() const {
     return format("{}[{}]\n", kind(), arrSize);
 }
 
-const char *printstr(kcc::AST *ast) {
+const char *printstr(kcc::AST::AST *ast) {
     return ast->str().c_str();
 }
 
-#define AST_ACCEPT(classname) void kcc::classname::accept(kcc::Visitor*vis){vis->pre(this);vis->visit(this);}
+#define AST_ACCEPT(classname) void kcc::AST::classname::accept(kcc::AST::Visitor*vis){vis->pre(this);vis->visit(this);}
 
 AST_ACCEPT(Identifier)
 
@@ -120,13 +120,13 @@ AST_ACCEPT(PostfixExpr)
 
 AST_ACCEPT(FuncArgType)
 
-kcc::FuncType *kcc::FuncDef::extractCallSignature() {
+kcc::AST::FuncType *kcc::AST::FuncDef::extractCallSignature() {
     auto f = new FuncType();
     f->add(first());
-    f->add(dynamic_cast<FuncDefArg*>(third())->extractArgType());
+    f->add(dynamic_cast<kcc::AST::FuncDefArg*>(third())->extractArgType());
     return f;
 }
-kcc::FuncArgType *kcc::FuncDefArg::extractArgType() {
+kcc::AST::FuncArgType *kcc::AST::FuncDefArg::extractArgType() {
     auto arg = new FuncArgType();
     for(auto i:*this){
         arg->add(i->first());
