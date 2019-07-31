@@ -3,6 +3,7 @@
 //
 
 #include "compile.h"
+#include "sema.h"
 using namespace kcc;
 
 void kcc::Compiler::compileFile(const char *filename) {
@@ -22,8 +23,9 @@ void kcc::Compiler::compileFile(const char *filename) {
     auto ast = p.parse();
     ast->link();
     fmt::print("{}\n", ast->str());
-  /*  Sema sema;
-    ast->accept(&sema);
+	Sema sema;
+	ast->accept(&sema);
+  /* 
     IRGenerator irGenerator;
     ast->accept(&irGenerator);
     irGenerator.printIR();*/

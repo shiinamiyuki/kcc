@@ -123,7 +123,7 @@ AST_ACCEPT(FuncArgType)
 kcc::AST::FuncType *kcc::AST::FuncDef::extractCallSignature() {
     auto f = new FuncType();
     f->add(first());
-    f->add(dynamic_cast<kcc::AST::FuncDefArg*>(third())->extractArgType());
+    f->add(cast<kcc::AST::FuncDefArg*>(third()));
     return f;
 }
 kcc::AST::FuncArgType *kcc::AST::FuncDefArg::extractArgType() {

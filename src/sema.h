@@ -2,10 +2,63 @@
 #define KCC_SEMA_H
 
 #include "visitor.h"
-
+#include "value.hpp"
+#include "type.hpp"
 
 namespace kcc {
-	class Sema : public AST::Visitor{
+	struct VarInfo {
+		std::string name;
+		Value value;
+		Type::IType* type = nullptr;
+	};
+	struct ScopedSymbolTable {
+		std::unordered_map<std::string, VarInfo> infos;
+		ScopedSymbolTable* parentScope = nullptr;
+		void addSymbol(const std::string& name, Value value, Type::IType* type) {
+			AssertThrow(type);
+			VarInfo info{ name, value, type };
+			infos[name] = info;
+		}
+		const VarInfo& find(const std::string& name)const {
+			auto iter = infos.find(name);
+			if (iter != infos.end())
+				return iter->second;
+			if (parentScope) {
+				return parentScope->find(name);
+			}
+			else {
+				throw std::runtime_error(format("No var named {}", name));
+			}
+		}
+	};
+	struct SymbolTable {
+		ScopedSymbolTable* symTable;
+		SymbolTable() {
+			symTable = new ScopedSymbolTable();
+		}
+		void addSymbol(const std::string& name, Value value, Type::IType* type) {
+			AssertThrow(type);
+			symTable->addSymbol(name, std::move(value), type);
+		}
+		const VarInfo& find(const std::string& name)const {
+			return symTable->find(name);
+		}
+		void pushScope() {
+			auto tmp = new ScopedSymbolTable();
+			tmp->parentScope = symTable;
+			symTable = tmp;
+		}
+		void popScope() {
+			auto tmp = symTable;
+			symTable = symTable->parentScope;
+			delete tmp;
+		}
+	};
+	class Sema : public AST::Visitor {
+		SymbolTable table;
+		Value createValue(Type::IType* type);
+		size_t floatRegCounter = 0;
+		size_t intRegCounter = 0;
 	public:
 		// Inherited via Visitor
 		virtual void visit(AST::For*) override;
@@ -38,7 +91,6 @@ namespace kcc {
 		virtual void visit(AST::PostfixExpr*) override;
 		virtual void visit(AST::FuncArgType*) override;
 	};
-
 }
 
 

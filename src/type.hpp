@@ -15,11 +15,12 @@ namespace kcc {
 			virtual bool isInt()const = 0;
 
 			virtual bool isPrimitive()const = 0;
-
-			bool isPointer()const { return !isPrimitive(); }
+			virtual bool isStruct()const = 0;
+			virtual std::string toString()const = 0;
+			bool isPointer()const { return !isPrimitive() && !isStruct(); }
 
 		};
-
+		class PrimitiveType;
 		class PrimitiveType : public IType {
 			Qualifier _qualifier;
 			std::string _name;
@@ -47,6 +48,12 @@ namespace kcc {
 			bool isPrimitive()const {
 				return isFloat() || isInt();
 			}
+			bool isStruct()const {
+				return false;
+			}
+			std::string toString()const {
+				return _name;
+			}
 		};
 
 		class PointerType : public IType {
@@ -64,8 +71,52 @@ namespace kcc {
 			bool isPrimitive()const {
 				return false;
 			}
+			bool isStruct()const {
+				return false;
+			}
+			std::string toString()const {
+				return format("{} *",_baseType->toString());
+			}
 		};
+		class FunctionType : public IType {
+		public:
+			IType* ret = nullptr;
+			std::vector<IType*> args;
+			FunctionType(IType* ret, std::vector<IType*> args)
+				:args(std::move(args)), ret(ret) {
+				AssertThrow(ret);
+				for (auto i : this->args) {
+					AssertThrow(i);
+				}
+			}
+			bool isFloat()const {
+				return false;
+			}
 
+			bool isInt()const {
+				return false;
+			}
+
+			bool isPrimitive()const {
+				return false;
+			}
+			bool isStruct()const {
+				return false;
+			}
+			std::string toString()const {
+				std::string s = "(";
+				for (auto i : args) {
+					s.append(i->toString()).append(", ");
+				}
+				s.append(")");
+				return format("{}->{}", s, ret->toString());
+			}
+		};
+		extern PrimitiveType* typeInt;
+		extern PrimitiveType* typeLong;
+		extern PrimitiveType* typeLongLong;
+		extern PrimitiveType* typeShort;
+		extern PrimitiveType* typeChar;
 	}
 }
 

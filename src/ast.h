@@ -140,6 +140,9 @@ namespace kcc {
 			kcc::Type::IType* type()const{
 				return _type;
 			}
+			kcc::Type::IType*& type() {
+				return _type;
+			}
 			void assignType(kcc::Type::IType* ty) { _type = ty; }
 		};
 		class BinaryExpression : public Expression {
@@ -274,8 +277,9 @@ namespace kcc {
 			void accept(Visitor*) override;
 		};
 
-		class Type : public AST {
+		class TypeDeclaration : public AST {
 		public:
+			Type::IType* type = nullptr;
 			virtual bool isPrimitive() const { return false; }
 
 			virtual bool isArray() const { return false; }
@@ -285,7 +289,7 @@ namespace kcc {
 			virtual std::string repr() const { return std::string(); }
 		};
 
-		class PrimitiveType : public Type {
+		class PrimitiveType : public TypeDeclaration {
 		public:
 			explicit PrimitiveType(const Token& t) { content = t; }
 
@@ -298,7 +302,7 @@ namespace kcc {
 			std::string repr() const { return tok(); }
 		};
 
-		class PointerType : public Type {
+		class PointerType : public TypeDeclaration {
 		public:
 			explicit PointerType() {}
 
@@ -308,12 +312,12 @@ namespace kcc {
 
 			bool isPointer() const override { return true; }
 
-			Type* ptrTo() const { return (Type*)first(); }
+			TypeDeclaration* ptrTo() const { return (TypeDeclaration*)first(); }
 
-			std::string repr() const { return ((Type*)first())->repr().append("*"); }
+			std::string repr() const { return ((TypeDeclaration*)first())->repr().append("*"); }
 		};
 
-		class ArrayType : public Type {
+		class ArrayType : public TypeDeclaration {
 			int arrSize;
 		public:
 			explicit ArrayType(int size = -1) {
@@ -327,31 +331,8 @@ namespace kcc {
 			void accept(Visitor*) override;
 		};
 
-		class FuncArgType;
-
-		class FuncType : public Type {
-		public:
-			explicit FuncType() {}
-
-			const std::string kind() const override { return "FuncType"; }
-
-			void accept(Visitor*) override;
-
-			Type* ret() const { return (Type*)first(); }
-
-			FuncArgType* arg() const { return (FuncArgType*)second(); }
-		};
-
-		class FuncArgType : public Type {
-		public:
-			explicit FuncArgType() {}
-
-			const std::string kind() const override { return "FuncArgType"; }
-
-			void accept(Visitor*) override;
-
-
-		};
+		
+		
 
 		class While : public AST {
 		public:
@@ -404,11 +385,12 @@ namespace kcc {
 
 			void accept(Visitor*) override;
 
-			Type* type() const { return (Type*)first(); }
+			TypeDeclaration* type() const { return cast<TypeDeclaration*>(first()); }
 
-			Identifier* identifier() const { return (Identifier*)second(); }
+			Identifier* identifier() const { return cast<Identifier*>(second()); }
 
 		};
+		class FuncArgType;
 
 		class FuncDefArg : public AST {
 		public:
@@ -419,7 +401,7 @@ namespace kcc {
 
 			FuncArgType* extractArgType();
 		};
-
+		class FuncType;
 		class FuncDef : public AST {
 		public:
 			unsigned int frameSize;
@@ -432,13 +414,40 @@ namespace kcc {
 
 			const std::string& name() const { return second()->tok(); }
 
+			TypeDeclaration* ret() const {
+				return cast<TypeDeclaration*>(first());
+			}
 			FuncDefArg* arg() const {
-				return (FuncDefArg*)third();
+				return cast<FuncDefArg*>(third());
 			}
 
 			Block* block() const {
-				return (Block*)forth();
+				return cast<Block*>(forth());
 			}
+		};
+		class FuncArgType;
+
+		class FuncArgType : public TypeDeclaration {
+		public:
+			explicit FuncArgType() {}
+
+			const std::string kind() const override { return "FuncArgType"; }
+
+			void accept(Visitor*) override;
+
+
+		};
+		class FuncType : public TypeDeclaration {
+		public:
+			explicit FuncType() {}
+
+			const std::string kind() const override { return "FuncType"; }
+
+			void accept(Visitor*) override;
+
+			TypeDeclaration* ret() const { return cast<TypeDeclaration*>(first()); }
+
+			FuncDefArg* arg() const { return cast<FuncDefArg*>(second()); }
 		};
 
 		class Return : public AST {

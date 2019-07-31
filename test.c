@@ -3,7 +3,7 @@
 //
 int printf(char *s, int a);
 
-int main() {
+int main(int argc, char ** argv) {
    /* printf("Hello world!\n", 0);
     int x;
     x = 2 * (3 + 4);

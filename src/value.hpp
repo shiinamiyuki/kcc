@@ -2,7 +2,6 @@
 #define KCC_VALUE_H
 
 #include "kcc.h"
-
 namespace kcc {
 	enum ValueType {
 		ENone = 0,
@@ -18,8 +17,8 @@ namespace kcc {
 			double asFloat;
 		};
 		size_t regId;
-
 	public:
+		
 		Value() :_type(ENone) {}
 		ValueType type()const { return _type; }
 		double toFloat()const {

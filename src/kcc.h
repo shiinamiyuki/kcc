@@ -17,14 +17,29 @@
 #include <exception>
 #include <chrono>
 #include <variant>
+#include <optional>
 #include "fmt/format.h"
 
 using namespace fmt;
+inline void __assert(bool x,const char *expr, const char *file, int line) {
+	if (!(x)) {
+		throw std::runtime_error(fmt::format("Assertion {} failed at {} {}", expr, file, line)); \
+	}
+}
 #define AssertThrow(x) \
-    do{if(!(x)){ \
-        throw std::runtime_error(fmt::format("Assertion {} failed at {} {}", #x, __FILE__, __LINE__));\
-    }}while(0)
-
+    do{\
+		__assert(x, #x, __FILE__, __LINE__);\
+	}while(0)
+namespace kcc {
+	template<class T, class U>
+	T cast(U ptr) {
+		if (!ptr)return nullptr;
+		auto p = dynamic_cast<T>(ptr);
+		if (p)
+			return p;
+		throw std::runtime_error(format("Cannot cast from {}* to {}", typeid(*ptr).name(), typeid(T).name()));
+	}
+}
 
 
 #endif /* KCC_H */
