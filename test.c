@@ -11,19 +11,7 @@ int main(int argc, char ** argv) {
     y = 2 + x;
     printf("%d\n", y);
     return 0;*/
-   int x = 10;
-   int y = 20;
-   if(y > 20){
-       x = 2;
-   }else if(y > 10){
-       if(x > 1){
-           x = 3;
-       }else{
-           x = 4;
-       }
-       x = x + 1;
-   }else{
-       x = 0;
-   }
-    return x;
+	int x = 10;
+	int* p;
+	p = 10.0;
 }

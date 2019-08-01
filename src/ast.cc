@@ -126,10 +126,3 @@ kcc::AST::FuncType *kcc::AST::FuncDef::extractCallSignature() {
     f->add(cast<kcc::AST::FuncDefArg*>(third()));
     return f;
 }
-kcc::AST::FuncArgType *kcc::AST::FuncDefArg::extractArgType() {
-    auto arg = new FuncArgType();
-    for(auto i:*this){
-        arg->add(i->first());
-    }
-    return arg;
-}

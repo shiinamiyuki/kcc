@@ -158,9 +158,9 @@ namespace kcc {
 
 			void accept(Visitor*) override;
 
-			AST* lhs() const { return first(); }
+			Expression* lhs() const { return cast<Expression*>(first()); }
 
-			AST* rhs() const { return second(); }
+			Expression* rhs() const { return cast<Expression*>(second());}
 		};
 
 		class PostfixExpr : public Expression {
@@ -184,7 +184,7 @@ namespace kcc {
 
 			void accept(Visitor*) override;
 
-			AST* expr() const { return first(); }
+			Expression* expr() const { return cast<Expression*>( first()); }
 		};
 
 		class TernaryExpression : public Expression {
@@ -353,7 +353,7 @@ namespace kcc {
 
 			AST* cond() const { return first(); }
 
-			AST* body() const { return second(); }
+			AST* ifPart() const { return second(); }
 
 			AST* elsePart() const { return third(); }
 		};
@@ -398,8 +398,6 @@ namespace kcc {
 			const std::string kind() const override { return "FuncDefArg"; }
 
 			void accept(Visitor*) override;
-
-			FuncArgType* extractArgType();
 		};
 		class FuncType;
 		class FuncDef : public AST {

@@ -19,6 +19,7 @@
 #include <variant>
 #include <optional>
 #include "fmt/format.h"
+#include "magic_enum.hpp"
 
 using namespace fmt;
 inline void __assert(bool x,const char *expr, const char *file, int line) {
@@ -39,6 +40,10 @@ namespace kcc {
 			return p;
 		throw std::runtime_error(format("Cannot cast from {}* to {}", typeid(*ptr).name(), typeid(T).name()));
 	}
+}
+
+inline void panic(const std::string& message) {
+	std::cerr << format("Internal Compiler Error: {}", message) << std::endl;
 }
 
 

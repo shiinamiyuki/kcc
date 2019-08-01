@@ -60,6 +60,7 @@ namespace kcc {
 		size_t floatRegCounter = 0;
 		size_t intRegCounter = 0;
 	public:
+		void error(const std::string& message);
 		// Inherited via Visitor
 		virtual void visit(AST::For*) override;
 		virtual void visit(AST::Identifier*) override;

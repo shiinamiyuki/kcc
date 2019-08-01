@@ -21,28 +21,42 @@ namespace kcc {
 
 		};
 		class PrimitiveType;
+
+		enum EPrimitiveType {
+			EVoid,
+			EChar,
+			EUChar,
+			EShort,
+			EUShort,
+			EInt,
+			EUInt,
+			ELong,
+			EULong,
+			ELongLong,
+			EULongLong,
+			EFloat,
+			EDouble,
+			ETotalPrimitiveType
+		};
+
 		class PrimitiveType : public IType {
 			Qualifier _qualifier;
-			std::string _name;
+			EPrimitiveType _type;
 			size_t _size;
-		public:
-			PrimitiveType(const std::string& name,
+			friend const std::array<PrimitiveType*, ETotalPrimitiveType>& getPrimitiveTypes();
+			PrimitiveType(EPrimitiveType type,
 				size_t size,
 				const Qualifier& qualifier = Qualifier())
-				:_name(name), _size(size), _qualifier(qualifier) {}
-
-			const std::string& name()const { return _name; }
+				:_type(type), _size(size), _qualifier(qualifier) {}
+		public:
+			EPrimitiveType type()const { return _type; }
 
 			bool isFloat()const {
-				return _name == "float" || _name == "double";
+				return type() == EFloat || type() == EDouble;
 			}
 
 			bool isInt()const {
-				return _name == "int" ||
-					_name == "long" ||
-					_name == "long long" ||
-					_name == "short" ||
-					_name == "char";
+				return EVoid < type() && type() < EFloat;
 			}
 
 			bool isPrimitive()const {
@@ -51,14 +65,15 @@ namespace kcc {
 			bool isStruct()const {
 				return false;
 			}
-			std::string toString()const {
-				return _name;
-			}
+			std::string toString()const;
 		};
 
 		class PointerType : public IType {
 			IType* _baseType;
 		public:
+			IType* baseType()const {
+				return _baseType;
+			};
 			PointerType(IType* base) :_baseType(base) {}
 			bool isFloat()const {
 				return false;
@@ -112,11 +127,9 @@ namespace kcc {
 				return format("{}->{}", s, ret->toString());
 			}
 		};
-		extern PrimitiveType* typeInt;
-		extern PrimitiveType* typeLong;
-		extern PrimitiveType* typeLongLong;
-		extern PrimitiveType* typeShort;
-		extern PrimitiveType* typeChar;
+		const std::array<PrimitiveType*, ETotalPrimitiveType>& getPrimitiveTypes();
+		bool convertible(IType* from, IType* to);
+		IType* checkBinaryExpr(IType * left, IType* right, const std::string& op);
 	}
 }
 
