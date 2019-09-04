@@ -10,13 +10,15 @@ namespace kcc {
 		std::string name;
 		Value value;
 		Type::IType* type = nullptr;
+		VarInfo()=default;
+		VarInfo(const std::string&name, const Value & v, Type::IType* t):name(name),value(v),type(t){}
 	};
 	struct ScopedSymbolTable {
 		std::unordered_map<std::string, VarInfo> infos;
 		ScopedSymbolTable* parentScope = nullptr;
 		void addSymbol(const std::string& name, Value value, Type::IType* type) {
 			AssertThrow(type);
-			VarInfo info{ name, value, type };
+			VarInfo info(name, value, type);
 			infos[name] = info;
 		}
 		const VarInfo& find(const std::string& name)const {

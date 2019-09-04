@@ -59,11 +59,13 @@ namespace kcc {
 	void Sema::visit(AST::PrimitiveType* type) {
 		static std::unordered_map<std::string, Type::IType*> primitiveTypeMap;
 		static std::once_flag flag;
+		
 		std::call_once(flag, [&]() {
 			primitiveTypeMap["int"] = Type::getPrimitiveTypes()[Type::EInt];
 			primitiveTypeMap["char"] = Type::getPrimitiveTypes()[Type::EChar];
 			primitiveTypeMap["float"] = Type::getPrimitiveTypes()[Type::EFloat];
 		});
+		
 		type->type = primitiveTypeMap.at(type->repr());
 	}
 	void Sema::visit(AST::PointerType* type) {
@@ -94,6 +96,7 @@ namespace kcc {
 		return new Type::FunctionType(type->ret()->type, args);
 	}
 	void Sema::visit(AST::FuncType* func) {
+		
 		auto ret = func->ret();
 		auto args = func->arg();
 		ret->accept(this);
@@ -190,7 +193,7 @@ namespace kcc {
 	}
 	void Sema::pre(AST::AST* ast)
 	{
-		//	log("visiting {}\b", ast->str());
+		log("visiting {}\b", ast->str());
 	}
 	void Sema::visit(AST::Enum*)
 	{

@@ -4,7 +4,7 @@
 
 namespace kcc {
 	template<class... Args>
-	void log(const char* fmt, Args... args) {
+	void log(const char* fmt, Args&&... args) {
 		print(fmt, args...);
 	}
 }

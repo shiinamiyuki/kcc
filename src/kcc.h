@@ -19,7 +19,6 @@
 #include <variant>
 #include <optional>
 #include "fmt/format.h"
-#include "magic_enum.hpp"
 
 using namespace fmt;
 inline void __assert(bool x,const char *expr, const char *file, int line) {

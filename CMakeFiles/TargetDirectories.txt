@@ -1,0 +1,3 @@
+/home/shiinamiyuki/Documents/kcc/CMakeFiles/rebuild_cache.dir
+/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir
+/home/shiinamiyuki/Documents/kcc/CMakeFiles/edit_cache.dir
