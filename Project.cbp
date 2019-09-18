@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="Project"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="kcc">
+				<Option output="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/kcc.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 kcc"/>
+					<CompileFile command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="kcc/fast">
+				<Option output="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/kcc.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/x86_64-w64-mingw32"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include/c++/backward"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/include-fixed"/>
+					<Add directory="C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/8.1.0/../../../../x86_64-w64-mingw32/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 kcc/fast"/>
+					<CompileFile command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="C:/PROGRA~1/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/mingw32-make.exe -f &quot;C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/ast.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/ast.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/compile.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/compile.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/cpp.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/cpp.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/fmt/format.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/fmt/format.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/fmt/posix.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/fmt/posix.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/lex.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/lex.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/main.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/parse.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/parse.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/sema.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/sema.h">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/type.cc">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/type.hpp">
+			<Option target="kcc"/>
+		</Unit>
+		<Unit filename="C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

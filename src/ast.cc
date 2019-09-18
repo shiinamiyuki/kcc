@@ -9,6 +9,7 @@
 #include "ast.h"
 #include "fmt/format.h"
 #include "visitor.h"
+#include "type.hpp"
 
 kcc::AST::AST::AST() {
     isFloat = false;
@@ -51,6 +52,14 @@ std::string kcc::AST::AST::str(int depth) const {
         }
     }
     return s;
+}
+
+std::string kcc::AST::Expression::info() const {
+
+    if (_type != nullptr) {
+        return fmt::format("{}[{}] type: {}\n", kind(), content.tok, _type->toString());
+    }
+     return AST::info();
 }
 
 std::string kcc::AST::ArrayType::info() const {
@@ -123,6 +132,6 @@ AST_ACCEPT(FuncArgType)
 kcc::AST::FuncType *kcc::AST::FuncDef::extractCallSignature() {
     auto f = new FuncType();
     f->add(first());
-    f->add(cast<kcc::AST::FuncDefArg*>(third()));
+    f->add(cast<kcc::AST::FuncDefArg *>(third()));
     return f;
 }

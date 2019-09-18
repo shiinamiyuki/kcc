@@ -22,9 +22,10 @@ void kcc::Compiler::compileFile(const char *filename) {
     Parser p(lex);
     auto ast = p.parse();
     ast->link();
-    fmt::print("{}\n", ast->str());
+    debug("{}\n", ast->str());
 	Sema sema;
 	ast->accept(&sema);
+    debug("{}\n", ast->str());
   /* 
     IRGenerator irGenerator;
     ast->accept(&irGenerator);

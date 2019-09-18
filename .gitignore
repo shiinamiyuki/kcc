@@ -1,2 +1,4 @@
 out/
 .vs/
+CMakeFiles/
+cmake-*/

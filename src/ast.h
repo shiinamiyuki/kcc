@@ -143,6 +143,7 @@ namespace kcc {
 			kcc::Type::IType*& type() {
 				return _type;
 			}
+			std::string info() const override;
 			void assignType(kcc::Type::IType* ty) { _type = ty; }
 		};
 		class BinaryExpression : public Expression {

@@ -4,16 +4,16 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/shiinamiyuki/Documents/kcc/src/ast.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/ast.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/compile.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/compile.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/cpp.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/cpp.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/fmt/format.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/fmt/format.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/fmt/posix.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/fmt/posix.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/lex.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/lex.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/main.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/main.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/parse.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/parse.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/sema.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/sema.cc.o"
-  "/home/shiinamiyuki/Documents/kcc/src/type.cc" "/home/shiinamiyuki/Documents/kcc/CMakeFiles/kcc.dir/src/type.cc.o"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/ast.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/ast.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/compile.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/compile.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/cpp.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/cpp.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/fmt/format.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/fmt/format.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/fmt/posix.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/fmt/posix.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/lex.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/lex.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/main.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/main.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/parse.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/parse.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/sema.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/sema.cc.obj"
+  "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/src/type.cc" "C:/Users/xiaoc/source/repos/shiinamiyuki/kcc/CMakeFiles/kcc.dir/src/type.cc.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
