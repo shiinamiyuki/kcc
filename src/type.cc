@@ -163,6 +163,27 @@ namespace kcc {
             return nullptr;
         }
 
+        bool equal(IType *a, IType *b) {
+            if (a == b)return true;
+            if (a->isPrimitive() && b->isPrimitive()) {
+                return cast<PrimitiveType *>(a)->type() == cast<PrimitiveType *>(b)->type();
+            }
+            if (a->isStruct() || b->isStruct()) {
+                return a == b;
+            }
+            if (a->isPointer() && b->isInt()) {
+                return false;
+            }
+            if (a->isInt() && b->isPointer()) {
+                return false;
+            }
+            if (a->isPointer() && b->isPointer()) {
+                return equal(cast<PointerType *>(a)->baseType(), cast<PointerType *>(b)->baseType());
+            }
+            debug("uncovered case {} {}\n", a->toString(), b->toString());
+            return false;
+        }
+
         bool convertible(IType *from, IType *to) {
             if (from->isPrimitive() && to->isPrimitive()) {
                 return true;
@@ -178,6 +199,16 @@ namespace kcc {
             if (from->isInt() && to->isPointer()) {
                 return true;
             }
+            if (from->isPointer() && to->isPointer()) {
+                return equal(from, to);
+            }
+            if (from->isPointer() && to->isFloat()) {
+                return false;
+            }
+            if (from->isFloat() && to->isPointer()) {
+                return false;
+            }
+            debug("uncovered case {} {}\n", from->toString(), to->toString());
             return false;
         }
 

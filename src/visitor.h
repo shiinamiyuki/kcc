@@ -55,7 +55,9 @@ namespace  kcc {
 
 			virtual void visit(UnaryExpression*) = 0;
 
-			virtual void pre(AST*) = 0;
+			virtual void pre(AST*) {}
+
+			virtual void post(AST*){}
 
 			virtual void visit(Enum*) = 0;
 

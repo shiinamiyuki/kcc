@@ -7,7 +7,8 @@ namespace kcc {
     void Sema::error(const std::string &message) {
         std::cout.flush();
         std::cerr.flush();
-        std::cerr << message << std::endl;
+        auto pos = sourcePosStack.back();
+        fmt::print(stderr, "error: {} at {}:{}:{}\n", message, pos.filename, pos.line, pos.col);
         std::exit(-1);
     }
 
@@ -129,7 +130,34 @@ namespace kcc {
         func->block()->accept(this);
     }
 
-    void Sema::visit(AST::CallExpression *) {
+    void Sema::visit(AST::CallExpression *callExpression) {
+        auto func = cast<AST::Expression *>(callExpression->first());
+        auto arg = callExpression->arg();
+        func->accept(this);
+        for (auto i: *arg) {
+            i->accept(this);
+        }
+        debug("checking call expression");
+        auto _func_type = func->type();
+        if (_func_type->isFunction()) {
+            auto func_type = cast<Type::FunctionType *>(_func_type);
+            auto expected = func_type->args.size();
+            auto actual = arg->size();
+            if (expected != actual) {
+                error(fmt::format("expected {} arguments but have {}", expected, actual));
+            }
+            for (int i = 0; i < arg->size(); i++) {
+                auto e = cast<AST::Expression *>(arg->get(i));
+                if (!Type::convertible(e->type(), func_type->args[i])) {
+                    error(fmt::format("cannot convert argument {} from {} to {}",
+                                      i + 1, e->type()->toString(), func_type->args[i]->toString()));
+                }
+            }
+            func->type() = func_type->ret;
+            AssertThrow(func_type->ret);
+        } else {
+            error("expected to call a function");
+        }
     }
 
     void Sema::visit(AST::CastExpression *) {
@@ -169,7 +197,8 @@ namespace kcc {
         }
     }
 
-    void Sema::visit(AST::Literal *) {
+    void Sema::visit(AST::Literal *literal) {
+        literal->type() = new Type::PointerType(Type::getPrimitiveTypes()[Type::EChar]);
     }
 
     void Sema::visit(AST::BinaryExpression *expr) {
@@ -206,6 +235,11 @@ namespace kcc {
 
     void Sema::pre(AST::AST *ast) {
         debug("visiting {}\b", ast->str());
+        sourcePosStack.push_back(ast->pos);
+    }
+
+    void Sema::post(AST::AST *ast) {
+        sourcePosStack.pop_back();
     }
 
     void Sema::visit(AST::Enum *) {

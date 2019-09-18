@@ -39,13 +39,15 @@ namespace kcc {
 			return p;
 		throw std::runtime_error(format("Cannot cast from {}* to {}", typeid(*ptr).name(), typeid(T).name()));
 	}
-#ifndef NDEBUG
+
     template<class... Args>
     inline void debug(const char * fmt, Args&&... args){
+#ifndef NDEBUG
         fmt::print(fmt, args...);
+#endif
     }
 
-#endif
+
     inline void panic(const std::string& message) {
         std::cerr << format("Internal Compiler Error: {}", message) << std::endl;
     }

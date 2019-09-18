@@ -59,7 +59,7 @@ std::string kcc::AST::Expression::info() const {
     if (_type != nullptr) {
         return fmt::format("{}[{}] type: {}\n", kind(), content.tok, _type->toString());
     }
-     return AST::info();
+    return AST::info();
 }
 
 std::string kcc::AST::ArrayType::info() const {
@@ -70,7 +70,7 @@ const char *printstr(kcc::AST::AST *ast) {
     return ast->str().c_str();
 }
 
-#define AST_ACCEPT(classname) void kcc::AST::classname::accept(kcc::AST::Visitor*vis){vis->pre(this);vis->visit(this);}
+#define AST_ACCEPT(classname) void kcc::AST::classname::accept(kcc::AST::Visitor*vis){vis->pre(this);vis->visit(this);vis->post(this);}
 
 AST_ACCEPT(Identifier)
 
