@@ -61,7 +61,13 @@ std::string kcc::AST::Expression::info() const {
     }
     return AST::info();
 }
+std::string kcc::AST::Identifier::info() const {
 
+    if (type() != nullptr) {
+        return fmt::format("{}[{}] type: {}, addr:{}\n", kind(), content.tok, type()->toString(), addr);
+    }
+    return AST::info();
+}
 std::string kcc::AST::ArrayType::info() const {
     return format("{}[{}]\n", kind(), arrSize);
 }

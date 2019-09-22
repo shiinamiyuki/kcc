@@ -4,6 +4,8 @@
 
 #include "compile.h"
 #include "sema.h"
+#include "codegen.h"
+
 using namespace kcc;
 
 void kcc::Compiler::compileFile(const char *filename) {
@@ -23,13 +25,12 @@ void kcc::Compiler::compileFile(const char *filename) {
     auto ast = p.parse();
     ast->link();
     debug("{}\n", ast->str());
-	Sema sema;
-	ast->accept(&sema);
+    Sema sema;
+    ast->accept(&sema);
     debug("{}\n", ast->str());
-  /* 
-    IRGenerator irGenerator;
-    ast->accept(&irGenerator);
-    irGenerator.printIR();*/
-  //  irGenerator.buildSSA();
+    CodeGenerator generator;
+    ast->accept(&generator);
+    std::ofstream out("../out.s");
+    out << generator.generateAsm();
 
 }

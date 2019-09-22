@@ -10,19 +10,23 @@ namespace kcc {
         std::string name;
         Value value;
         Type::IType *type = nullptr;
+        size_t addr;
 
         VarInfo() = default;
 
-        VarInfo(const std::string &name, const Value &v, Type::IType *t) : name(name), value(v), type(t) {}
+        VarInfo(const std::string &name, const Value &v, Type::IType *t, size_t addr)
+                : name(name), value(v), type(t), addr(addr) {}
     };
 
     struct ScopedSymbolTable {
         std::unordered_map<std::string, VarInfo> infos;
         ScopedSymbolTable *parentScope = nullptr;
+        size_t localOffset = 0;
 
         void addSymbol(const std::string &name, Value value, Type::IType *type) {
             AssertThrow(type);
-            VarInfo info(name, value, type);
+            localOffset += type->size();
+            VarInfo info(name, value, type, localOffset);
             infos[name] = info;
         }
 
@@ -43,6 +47,7 @@ namespace kcc {
 
         SymbolTable() {
             symTable = new ScopedSymbolTable();
+            symTable->localOffset = 0;
         }
 
         void addSymbol(const std::string &name, Value value, Type::IType *type) {
@@ -57,13 +62,19 @@ namespace kcc {
         void pushScope() {
             auto tmp = new ScopedSymbolTable();
             tmp->parentScope = symTable;
+            if(!underGlobal())
+                tmp->localOffset = tmp->parentScope->localOffset;
             symTable = tmp;
+
         }
 
         void popScope() {
             auto tmp = symTable;
             symTable = symTable->parentScope;
             delete tmp;
+        }
+        bool underGlobal()const{
+            return symTable->parentScope == nullptr;
         }
     };
 
@@ -74,7 +85,11 @@ namespace kcc {
 
         size_t floatRegCounter = 0;
         size_t intRegCounter = 0;
+        size_t funcLocalAllocatedSize = 0;
         std::vector<SourcePos> sourcePosStack;
+
+        void pushScope();
+        void popScope();
     public:
         void error(const std::string &message);
 

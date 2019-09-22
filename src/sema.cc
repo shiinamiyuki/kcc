@@ -18,6 +18,7 @@ namespace kcc {
     void Sema::visit(AST::Identifier *identifier) {
         auto iden = identifier->tok();
         identifier->type() = table.find(iden).type;
+        identifier->addr = table.find(iden).addr;
     }
 
     void Sema::visit(AST::While *whileStmt) {
@@ -25,10 +26,23 @@ namespace kcc {
         whileStmt->body()->accept(this);
     }
 
+    void Sema::pushScope() {
+        table.pushScope();
+    }
+
+    void Sema::popScope() {
+        table.popScope();
+    }
+
     void Sema::visit(AST::Block *block) {
+        pushScope();
         for (auto i : *block) {
             i->accept(this);
         }
+        if (!table.underGlobal()) {
+            funcLocalAllocatedSize = std::max(funcLocalAllocatedSize, table.symTable->localOffset);
+        }
+        popScope();
     }
 
     void Sema::visit(AST::TopLevel *top) {
@@ -56,7 +70,10 @@ namespace kcc {
         }
     }
 
-    void Sema::visit(AST::Return *) {
+    void Sema::visit(AST::Return *aReturn) {
+        if(aReturn->size() == 1){
+            aReturn->first()->accept(this);
+        }
     }
 
     void Sema::visit(AST::Empty *) {
@@ -117,9 +134,11 @@ namespace kcc {
     }
 
     void Sema::visit(AST::FuncDef *func) {
+        funcLocalAllocatedSize = 0;
         auto &funcname = func->name();
         auto ret = func->ret();
         auto args = func->arg();
+        pushScope();
         ret->accept(this);
         args->accept(this);
         auto type = func->extractCallSignature();
@@ -128,6 +147,10 @@ namespace kcc {
         debug("added func {}: {}\n", funcname, funcType->toString());
         table.addSymbol(funcname, createValue(funcType), funcType);
         func->block()->accept(this);
+        popScope();
+        func->localAllocatedSize = align16(funcLocalAllocatedSize);
+        funcLocalAllocatedSize = 0;
+        debug("allocated {} bytes for local variables\n", func->localAllocatedSize);
     }
 
     void Sema::visit(AST::CallExpression *callExpression) {
@@ -153,7 +176,8 @@ namespace kcc {
                                       i + 1, e->type()->toString(), func_type->args[i]->toString()));
                 }
             }
-            func->type() = func_type->ret;
+            func->type() = func_type;
+            callExpression->type() = func_type->ret;
             AssertThrow(func_type->ret);
         } else {
             error("expected to call a function");
@@ -187,8 +211,18 @@ namespace kcc {
                 idenName = std::string("##").append(std::to_string(intRegCounter));
             }
         }
-        debug("added {}: {}\n", idenName, type->toString());
+        if (decl->size() == 3) {
+            auto init = decl->init();
+            init->accept(this);
+            if (!Type::checkBinaryExpr(type, init->type(), "=")) {
+                error(fmt::format("cannot assign {} with {}", init->type()->toString(), type->toString()));
+            }
+        }
+
         table.addSymbol(iden.tok, createValue(type), type);
+        identifier->type() = type;
+        identifier->addr = table.find(idenName).addr;
+        debug("added {}: {} at {}\n", idenName, type->toString(), table.find(idenName).addr);
     }
 
     void Sema::visit(AST::DeclarationList *list) {

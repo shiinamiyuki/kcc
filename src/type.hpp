@@ -11,6 +11,9 @@ namespace kcc {
 
         class IType {
         public:
+
+            virtual size_t size() const = 0;
+
             virtual bool isFloat() const = 0;
 
             virtual bool isInt() const = 0;
@@ -19,7 +22,7 @@ namespace kcc {
 
             virtual bool isStruct() const = 0;
 
-            virtual bool isFunction()const = 0;
+            virtual bool isFunction() const = 0;
 
             virtual std::string toString() const = 0;
 
@@ -49,14 +52,12 @@ namespace kcc {
         class PrimitiveType : public IType {
             Qualifier _qualifier;
             EPrimitiveType _type;
-            size_t _size;
 
             friend const std::array<PrimitiveType *, ETotalPrimitiveType> &getPrimitiveTypes();
 
             PrimitiveType(EPrimitiveType type,
-                          size_t size,
                           const Qualifier &qualifier = Qualifier())
-                    : _type(type), _size(size), _qualifier(qualifier) {}
+                    : _type(type), _qualifier(qualifier) {}
 
         public:
             EPrimitiveType type() const { return _type; }
@@ -76,11 +77,34 @@ namespace kcc {
             bool isStruct() const {
                 return false;
             }
-            bool isFunction()const{
+
+            bool isFunction() const {
                 return false;
             }
 
             std::string toString() const;
+
+            size_t size() const override {
+                switch (_type) {
+                    case EChar:
+                    case EUChar:
+                        return 1;
+                    case EShort:
+                    case EUShort:
+                        return 2;
+                    case EInt:
+                    case EUInt:
+                    case ELong:
+                    case EULong:
+                        return 4;
+
+                    case ELongLong:
+                    case EULongLong:
+                        return 8;
+                    default:
+                        return 8;
+                }
+            }
         };
 
         class PointerType : public IType {
@@ -111,8 +135,13 @@ namespace kcc {
             std::string toString() const {
                 return format("{} *", _baseType->toString());
             }
-            bool isFunction()const{
+
+            bool isFunction() const {
                 return false;
+            }
+
+            size_t size() const override {
+                return 8;
             }
         };
 
@@ -153,8 +182,13 @@ namespace kcc {
                 s.append(")");
                 return format("{}->{}", s, ret->toString());
             }
-            bool isFunction()const{
+
+            bool isFunction() const {
                 return true;
+            }
+
+            size_t size() const override {
+                return 8;
             }
         };
 

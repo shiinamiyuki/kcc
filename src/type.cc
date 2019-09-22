@@ -4,44 +4,12 @@
 
 namespace kcc {
     namespace Type {
-        size_t getSize(EPrimitiveType type) {
-            switch (type) {
-                case EVoid:
-                    return 0;
-                case EChar:
-                    return sizeof(char);
-                case EUChar:
-                    return sizeof(unsigned char);
-                case EShort:
-                    return sizeof(short);
-                case EUShort:
-                    return sizeof(unsigned short);
-                case EInt:
-                    return sizeof(int);
-                case EUInt:
-                    return sizeof(unsigned int);
-                case ELong:
-                    return sizeof(long);
-                case EULong:
-                    return sizeof(unsigned long);
-                case ELongLong:
-                    return sizeof(long long);
-                case EULongLong:
-                    return sizeof(unsigned long long);
-                case EFloat:
-                    return sizeof(float);
-                case EDouble:
-                    return sizeof(double);
-            }
-            return -1;
-        }
-
         const std::array<PrimitiveType *, ETotalPrimitiveType> &getPrimitiveTypes() {
             static std::array<PrimitiveType *, ETotalPrimitiveType> arr;
             static std::once_flag flag;
             std::call_once(flag, [&]() {
                 for (int i = 0; i < ETotalPrimitiveType; i++) {
-                    arr[i] = new PrimitiveType(EPrimitiveType(i), getSize((EPrimitiveType) i));
+                    arr[i] = new PrimitiveType(EPrimitiveType(i));
                 }
 
             });
@@ -126,6 +94,9 @@ namespace kcc {
             }
             if (left->isInt() && right->isInt()) {
                 if (intArithmeticOps.find(op) != intArithmeticOps.end()) {
+                    return intPromote(left, right);
+                }
+                if (comparisonOps.find(op) != comparisonOps.end()) {
                     return intPromote(left, right);
                 }
                 auto opRemovedAssign = op.substr(0, op.size() - 1);

@@ -2,10 +2,10 @@
 #include "type.hpp"
 
 
-int main() {
+int main(int argc,char** argv) {
     try {
         kcc::Compiler compiler;
-        compiler.compileFile(R"(../test.c)");
+        compiler.compileFile(argv[1]);
         return 0;
     }
     catch (std::exception &e) {

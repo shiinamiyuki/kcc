@@ -316,7 +316,9 @@ AST::AST *Parser::parseStmt() {
         auto e = parseDecl();
         expect(";");
         return e;
-    } else {
+    } else if(has("{")){
+        return parseBlock();
+    }else {
         auto a = parseExpr(0);
         expect(";");
         return a;

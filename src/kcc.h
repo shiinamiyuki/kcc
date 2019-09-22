@@ -52,6 +52,10 @@ namespace kcc {
         std::cerr << format("Internal Compiler Error: {}", message) << std::endl;
     }
 
+    inline size_t align16(size_t x){
+        return (x + 15) & (~15);
+    }
+
 }
 
 

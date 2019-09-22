@@ -10,12 +10,12 @@
 
 #include "kcc.h"
 #include "lex.h"
-#include "value.hpp" 
+#include "value.hpp"
+#include "registers.h"
 
 namespace kcc {
     struct Token;
 
-   
 
     struct SourcePos {
         int line;
@@ -30,461 +30,498 @@ namespace kcc {
             filename = _filename;
         }
     };
-	namespace Type {
-		class IType;
-	}
-	namespace AST {
-		class Visitor;
-		class AST {
-		protected:
-			std::vector<AST*> children;
-			Token content;
-			AST* parent;
+    struct Reg {
+        bool isInt = true;
+        int index;
+        bool isMachineReg()const{
+            if(isInt){
+                return index <= r14;
+            }
+            AssertThrow(false);
+        }
+    };
 
-			virtual void linkRec();
+    namespace Type {
+        class IType;
+    }
+    namespace AST {
+        class Visitor;
 
-		public:
-			bool isFloat;
-			bool isGlobal;
-			unsigned int scale;
+        class AST {
+        protected:
+            std::vector<AST *> children;
+            Token content;
+            AST *parent;
 
+            virtual void linkRec();
 
+        public:
+            bool isFloat;
+            bool isGlobal;
+            unsigned int scale;
 
-			SourcePos pos;
-
-			AST();
 
-			void setContent(const Token& t) {
-				content = t;
-			}
+            SourcePos pos;
 
-			virtual std::string str(int depth = 0) const;
+            AST();
 
-			virtual std::string info() const;
+            void setContent(const Token &t) {
+                content = t;
+            }
 
-			virtual const std::string kind() const { return std::string(); };
+            virtual std::string str(int depth = 0) const;
 
-			inline AST* first() const {
-				return children.at(0);
-			}
+            virtual std::string info() const;
 
-			inline AST* second() const {
-				return children.at(1);
-			}
+            virtual const std::string kind() const { return std::string(); };
 
-			inline AST* third() const {
-				return children.at(2);
-			}
+            inline AST *first() const {
+                return children.at(0);
+            }
 
-			inline AST* forth() const {
-				return children.at(3);
-			}
+            inline AST *second() const {
+                return children.at(1);
+            }
 
-			inline void add(AST* t) {
-				children.push_back(t);
-			}
+            inline AST *third() const {
+                return children.at(2);
+            }
 
-			inline int size() const {
-				return children.size();
-			}
+            inline AST *forth() const {
+                return children.at(3);
+            }
 
-			inline const Token& getToken() const {
-				return content;
-			}
+            inline void add(AST *t) {
+                AssertThrow(t != nullptr);
+                children.push_back(t);
+            }
 
-			inline std::vector<AST*>::reverse_iterator rbegin() {
-				return children.rbegin();
-			}
+            inline int size() const {
+                return children.size();
+            }
 
-			inline std::vector<AST*>::reverse_iterator rend() {
-				return children.rend();
-			}
+            inline const Token &getToken() const {
+                return content;
+            }
 
-			inline std::vector<AST*>::iterator begin() {
-				return children.begin();
-			}
+            inline std::vector<AST *>::reverse_iterator rbegin() {
+                return children.rbegin();
+            }
 
-			inline std::vector<AST*>::iterator end() {
-				return children.end();
-			}
+            inline std::vector<AST *>::reverse_iterator rend() {
+                return children.rend();
+            }
 
-			void set(int i, AST* ast) {
-				children[i] = ast;
-			}
+            inline std::vector<AST *>::iterator begin() {
+                return children.begin();
+            }
 
-			AST* get(int i) {
-				return children.at(i);
-			}
+            inline std::vector<AST *>::iterator end() {
+                return children.end();
+            }
 
-			virtual ~AST();
+            void set(int i, AST *ast) {
+                children[i] = ast;
+            }
 
-			virtual void accept(Visitor* vis);
+            AST *get(int i) {
+                return children.at(i);
+            }
 
-			virtual void link();
+            virtual ~AST();
 
-			AST* getParent() const { return parent; }
+            virtual void accept(Visitor *vis);
 
-			const std::string& tok() const { return getToken().tok; }
+            virtual void link();
 
-			std::string getPos() const {
-				return format("{}:{}:{}", pos.filename, pos.line, pos.col);
-			}
-		};
+            AST *getParent() const { return parent; }
 
-		const char* printstr(AST* ast);
-		class Expression : public AST {
-		
-			kcc::Type::IType * _type = nullptr;
-		public:
-			Value value;
-			kcc::Type::IType* type()const{
-				return _type;
-			}
-			kcc::Type::IType*& type() {
-				return _type;
-			}
-			std::string info() const override;
-			void assignType(kcc::Type::IType* ty) { _type = ty; }
-		};
-		class BinaryExpression : public Expression {
-		public:
-			explicit BinaryExpression(const Token& t) {
-				content = t;
-				scale = 1;
-			}
+            const std::string &tok() const { return getToken().tok; }
 
-			BinaryExpression() { scale = 1; }
+            std::string getPos() const {
+                return format("{}:{}:{}", pos.filename, pos.line, pos.col);
+            }
+        };
 
-			const std::string kind() const override { return "BinaryExpression"; }
+        const char *printstr(AST *ast);
 
-			void accept(Visitor*) override;
+        class Expression : public AST {
 
-			Expression* lhs() const { return cast<Expression*>(first()); }
+            kcc::Type::IType *_type = nullptr;
+            Reg _reg;
+        public:
+            Value value;
 
-			Expression* rhs() const { return cast<Expression*>(second());}
-		};
+            Reg &reg() {
+                return _reg;
+            }
 
-		class PostfixExpr : public Expression {
-		public:
-			explicit PostfixExpr(const Token& t) { content = t; }
+            const Reg &reg() const {
+                return _reg;
+            }
 
-			PostfixExpr() = default;
+            kcc::Type::IType *type() const {
+                return _type;
+            }
 
-			const std::string kind() const override { return "PostfixExpr"; }
+            kcc::Type::IType *&type() {
+                return _type;
+            }
 
-			void accept(Visitor*) override;
-		};
+            std::string info() const override;
 
-		class UnaryExpression : public Expression {
-		public:
-			explicit UnaryExpression(const Token& t) { content = t; }
+            void assignType(kcc::Type::IType *ty) { _type = ty; }
+        };
 
-			UnaryExpression() = default;
+        class BinaryExpression : public Expression {
+        public:
+            explicit BinaryExpression(const Token &t) {
+                content = t;
+                scale = 1;
+            }
 
-			const std::string kind() const override { return "UnaryExpression"; }
+            BinaryExpression() { scale = 1; }
 
-			void accept(Visitor*) override;
+            const std::string kind() const override { return "BinaryExpression"; }
 
-			Expression* expr() const { return cast<Expression*>( first()); }
-		};
+            void accept(Visitor *) override;
 
-		class TernaryExpression : public Expression {
-		public:
-			TernaryExpression() = default;
+            Expression *lhs() const { return cast<Expression *>(first()); }
 
-			const std::string kind() const override { return "TernaryExpression"; }
+            Expression *rhs() const { return cast<Expression *>(second()); }
+        };
 
-			void accept(Visitor*) override;
-		};
+        class PostfixExpr : public Expression {
+        public:
+            explicit PostfixExpr(const Token &t) { content = t; }
 
-		class Identifier : public Expression {
-		public:
-			Identifier() = default;
+            PostfixExpr() = default;
 
-			explicit Identifier(const Token& t) { content = t; }
+            const std::string kind() const override { return "PostfixExpr"; }
 
-			const std::string kind() const override { return "Identifier"; }
+            void accept(Visitor *) override;
+        };
 
-			void accept(Visitor*) override;
-		};
+        class UnaryExpression : public Expression {
+        public:
+            explicit UnaryExpression(const Token &t) { content = t; }
 
-		class Number : public Expression {
-		public:
-			Number() {}
+            UnaryExpression() = default;
 
-			explicit Number(const Token& t) { content = t; }
+            const std::string kind() const override { return "UnaryExpression"; }
 
-			const std::string kind() const override { return "Number"; }
+            void accept(Visitor *) override;
 
-			void accept(Visitor*) override;
+            Expression *expr() const { return cast<Expression *>(first()); }
+        };
 
-			int getInt() {
-				std::istringstream in(tok());
-				int i;
-				in >> i;
-				return i;
-			}
+        class TernaryExpression : public Expression {
+        public:
+            TernaryExpression() = default;
 
-			double getFloat() {
-				std::istringstream in(tok());
-				double i;
-				in >> i;
-				return i;
-			}
-		};
+            const std::string kind() const override { return "TernaryExpression"; }
 
-		class Literal : public Expression {
-		public:
-			explicit Literal(const Token& t) { content = t; }
+            void accept(Visitor *) override;
+        };
 
-			const std::string kind() const override { return "Literal"; }
+        class Identifier : public Expression {
+        public:
+            size_t addr;
+            Identifier() = default;
 
-			void accept(Visitor*) override;
-		};
+            explicit Identifier(const Token &t) { content = t; }
 
-		class CastExpression : public Expression {
-		public:
-			CastExpression() = default;
+            const std::string kind() const override { return "Identifier"; }
 
-			const std::string kind() const override { return "CastExpression"; }
+            void accept(Visitor *) override;
 
-			void accept(Visitor*) override;
-		};
+            std::string info()const override;
+        };
 
-		class IndexExpression : public Expression {
-		public:
-			const std::string kind() const override { return "IndexExpression"; }
+        class Number : public Expression {
+        public:
+            Number() {}
 
-			void accept(Visitor*) override;
-		};
+            explicit Number(const Token &t) { content = t; }
 
-		class ArgumentExepressionList;
+            const std::string kind() const override { return "Number"; }
 
-		class CallExpression : public Expression {
-		public:
-			const std::string kind() const override { return "CallExpression"; }
+            void accept(Visitor *) override;
 
-			void accept(Visitor*) override;
+            int getInt() {
+                std::istringstream in(tok());
+                int i;
+                in >> i;
+                return i;
+            }
 
-			AST* callee() const { return first(); }
+            double getFloat() {
+                std::istringstream in(tok());
+                double i;
+                in >> i;
+                return i;
+            }
+        };
 
-			ArgumentExepressionList* arg() const { return (ArgumentExepressionList*)second(); }
-		};
+        class Literal : public Expression {
+        public:
+            explicit Literal(const Token &t) { content = t; }
 
-		class ArgumentExepressionList : public AST {
-		public:
-			const std::string kind() const override { return "ArgumentExepressionList"; }
+            const std::string kind() const override { return "Literal"; }
 
-			void accept(Visitor*) override;
-		};
+            void accept(Visitor *) override;
+        };
 
-		class TypeDeclaration : public AST {
-		public:
-			Type::IType* type = nullptr;
-			virtual bool isPrimitive() const { return false; }
+        class CastExpression : public Expression {
+        public:
+            CastExpression() = default;
 
-			virtual bool isArray() const { return false; }
+            const std::string kind() const override { return "CastExpression"; }
 
-			virtual bool isPointer() const { return false; }
+            void accept(Visitor *) override;
+        };
 
-			virtual std::string repr() const { return std::string(); }
-		};
+        class IndexExpression : public Expression {
+        public:
+            const std::string kind() const override { return "IndexExpression"; }
 
-		class PrimitiveType : public TypeDeclaration {
-		public:
-			explicit PrimitiveType(const Token& t) { content = t; }
+            void accept(Visitor *) override;
+        };
 
-			const std::string kind() const override { return "PrimitiveType"; }
+        class ArgumentExepressionList;
 
-			void accept(Visitor*) override;
+        class CallExpression : public Expression {
+        public:
+            const std::string kind() const override { return "CallExpression"; }
 
-			bool isPrimitive() const override { return true; }
+            void accept(Visitor *) override;
 
-			std::string repr() const { return tok(); }
-		};
+            AST *callee() const { return first(); }
 
-		class PointerType : public TypeDeclaration {
-		public:
-			explicit PointerType() {}
+            ArgumentExepressionList *arg() const { return (ArgumentExepressionList *) second(); }
+        };
 
-			const std::string kind() const override { return "PointerType"; }
+        class ArgumentExepressionList : public AST {
+        public:
+            const std::string kind() const override { return "ArgumentExepressionList"; }
 
-			void accept(Visitor*) override;
+            void accept(Visitor *) override;
+        };
 
-			bool isPointer() const override { return true; }
+        class TypeDeclaration : public AST {
+        public:
+            Type::IType *type = nullptr;
 
-			TypeDeclaration* ptrTo() const { return (TypeDeclaration*)first(); }
+            virtual bool isPrimitive() const { return false; }
 
-			std::string repr() const { return ((TypeDeclaration*)first())->repr().append("*"); }
-		};
+            virtual bool isArray() const { return false; }
 
-		class ArrayType : public TypeDeclaration {
-			int arrSize;
-		public:
-			explicit ArrayType(int size = -1) {
-				arrSize = size;
-			}
+            virtual bool isPointer() const { return false; }
 
-			const std::string kind() const override { return "ArrayType"; }
+            virtual std::string repr() const { return std::string(); }
+        };
 
-			std::string info() const override;
+        class PrimitiveType : public TypeDeclaration {
+        public:
+            explicit PrimitiveType(const Token &t) { content = t; }
 
-			void accept(Visitor*) override;
-		};
+            const std::string kind() const override { return "PrimitiveType"; }
 
-		
-		
+            void accept(Visitor *) override;
 
-		class While : public AST {
-		public:
-			const std::string kind() const override { return "While"; }
+            bool isPrimitive() const override { return true; }
 
-			void accept(Visitor*) override;
+            std::string repr() const { return tok(); }
+        };
 
-			AST* cond() const { return first(); }
+        class PointerType : public TypeDeclaration {
+        public:
+            explicit PointerType() {}
 
-			AST* body() const { return second(); }
-		};
+            const std::string kind() const override { return "PointerType"; }
 
-		class If : public AST {
-		public:
-			const std::string kind() const override { return "If"; }
+            void accept(Visitor *) override;
 
-			void accept(Visitor*) override;
+            bool isPointer() const override { return true; }
 
-			AST* cond() const { return first(); }
+            TypeDeclaration *ptrTo() const { return (TypeDeclaration *) first(); }
 
-			AST* ifPart() const { return second(); }
+            std::string repr() const { return ((TypeDeclaration *) first())->repr().append("*"); }
+        };
 
-			AST* elsePart() const { return third(); }
-		};
+        class ArrayType : public TypeDeclaration {
+            int arrSize;
+        public:
+            explicit ArrayType(int size = -1) {
+                arrSize = size;
+            }
 
-		class Block : public AST {
-		public:
-			const std::string kind() const override { return "Block"; }
+            const std::string kind() const override { return "ArrayType"; }
 
-			void accept(Visitor*) override;
-		};
+            std::string info() const override;
 
-		class TopLevel : public AST {
-		public:
-			const std::string kind() const override { return "TopLevel"; }
+            void accept(Visitor *) override;
+        };
 
-			void accept(Visitor*) override;
-		};
 
-		class DeclarationList : public AST {
-		public:
-			const std::string kind() const override { return "DeclarationList"; }
+        class While : public AST {
+        public:
+            const std::string kind() const override { return "While"; }
 
-			void accept(Visitor*) override;
-		};
+            void accept(Visitor *) override;
 
-		class Declaration : public AST {
-		public:
-			const std::string kind() const override { return "Declaration"; }
+            AST *cond() const { return first(); }
 
-			void accept(Visitor*) override;
+            AST *body() const { return second(); }
+        };
 
-			TypeDeclaration* type() const { return cast<TypeDeclaration*>(first()); }
+        class If : public AST {
+        public:
+            const std::string kind() const override { return "If"; }
 
-			Identifier* identifier() const { return cast<Identifier*>(second()); }
+            void accept(Visitor *) override;
 
-		};
-		class FuncArgType;
+            AST *cond() const { return first(); }
 
-		class FuncDefArg : public AST {
-		public:
+            AST *ifPart() const { return second(); }
 
-			const std::string kind() const override { return "FuncDefArg"; }
+            AST *elsePart() const { return third(); }
+        };
 
-			void accept(Visitor*) override;
-		};
-		class FuncType;
-		class FuncDef : public AST {
-		public:
-			unsigned int frameSize;
+        class Block : public AST {
+        public:
+            const std::string kind() const override { return "Block"; }
 
-			const std::string kind() const override { return "FuncDef"; }
+            void accept(Visitor *) override;
+        };
 
-			void accept(Visitor*) override;
+        class TopLevel : public AST {
+        public:
+            const std::string kind() const override { return "TopLevel"; }
 
-			FuncType* extractCallSignature();
+            void accept(Visitor *) override;
+        };
 
-			const std::string& name() const { return second()->tok(); }
+        class DeclarationList : public AST {
+        public:
+            const std::string kind() const override { return "DeclarationList"; }
 
-			TypeDeclaration* ret() const {
-				return cast<TypeDeclaration*>(first());
-			}
-			FuncDefArg* arg() const {
-				return cast<FuncDefArg*>(third());
-			}
+            void accept(Visitor *) override;
+        };
 
-			Block* block() const {
-				return cast<Block*>(forth());
-			}
-		};
-		class FuncArgType;
+        class Declaration : public AST {
+        public:
+            const std::string kind() const override { return "Declaration"; }
 
-		class FuncArgType : public TypeDeclaration {
-		public:
-			explicit FuncArgType() {}
+            void accept(Visitor *) override;
 
-			const std::string kind() const override { return "FuncArgType"; }
+            TypeDeclaration *type() const { return cast<TypeDeclaration *>(first()); }
 
-			void accept(Visitor*) override;
+            Identifier *identifier() const { return cast<Identifier *>(second()); }
 
+            Expression *init() const { return cast<Expression *>(third()); }
 
-		};
-		class FuncType : public TypeDeclaration {
-		public:
-			explicit FuncType() {}
+        };
 
-			const std::string kind() const override { return "FuncType"; }
+        class FuncArgType;
 
-			void accept(Visitor*) override;
+        class FuncDefArg : public AST {
+        public:
 
-			TypeDeclaration* ret() const { return cast<TypeDeclaration*>(first()); }
+            const std::string kind() const override { return "FuncDefArg"; }
 
-			FuncDefArg* arg() const { return cast<FuncDefArg*>(second()); }
-		};
+            void accept(Visitor *) override;
+        };
 
-		class Return : public AST {
-		public:
-			const std::string kind() const override { return "Return"; }
+        class FuncType;
 
-			void accept(Visitor*) override;
-		};
+        class FuncDef : public AST {
+        public:
+           size_t localAllocatedSize =0;
 
-		class For : public AST {
-		public:
-			const std::string kind() const override { return "For"; }
+            const std::string kind() const override { return "FuncDef"; }
 
-			void accept(Visitor*) override;
+            void accept(Visitor *) override;
 
-			AST* init() const { return first(); }
+            FuncType *extractCallSignature();
 
-			AST* cond() const { return second(); }
+            const std::string &name() const { return second()->tok(); }
 
-			AST* step() const { return third(); }
+            TypeDeclaration *ret() const {
+                return cast<TypeDeclaration *>(first());
+            }
 
-			AST* body() const { return forth(); }
-		};
+            FuncDefArg *arg() const {
+                return cast<FuncDefArg *>(third());
+            }
 
-		class Empty : public AST {
-		public:
-			const std::string kind() const override { return "Empty"; }
+            Block *block() const {
+                return cast<Block *>(forth());
+            }
+        };
 
-			void accept(Visitor*) override;
-		};
+        class FuncArgType;
 
-		class Enum : public AST {
-		public:
-			const std::string kind() const override { return "Enum"; }
+        class FuncArgType : public TypeDeclaration {
+        public:
+            explicit FuncArgType() {}
 
-			void accept(Visitor*) override;
-		};
-	}
+            const std::string kind() const override { return "FuncArgType"; }
+
+            void accept(Visitor *) override;
+
+
+        };
+
+        class FuncType : public TypeDeclaration {
+        public:
+            explicit FuncType() {}
+
+            const std::string kind() const override { return "FuncType"; }
+
+            void accept(Visitor *) override;
+
+            TypeDeclaration *ret() const { return cast<TypeDeclaration *>(first()); }
+
+            FuncDefArg *arg() const { return cast<FuncDefArg *>(second()); }
+        };
+
+        class Return : public AST {
+        public:
+            const std::string kind() const override { return "Return"; }
+
+            void accept(Visitor *) override;
+        };
+
+        class For : public AST {
+        public:
+            const std::string kind() const override { return "For"; }
+
+            void accept(Visitor *) override;
+
+            AST *init() const { return first(); }
+
+            AST *cond() const { return second(); }
+
+            AST *step() const { return third(); }
+
+            AST *body() const { return forth(); }
+        };
+
+        class Empty : public AST {
+        public:
+            const std::string kind() const override { return "Empty"; }
+
+            void accept(Visitor *) override;
+        };
+
+        class Enum : public AST {
+        public:
+            const std::string kind() const override { return "Enum"; }
+
+            void accept(Visitor *) override;
+        };
+    }
 }
 
 
