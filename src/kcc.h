@@ -56,6 +56,8 @@ namespace kcc {
         return (x + 15) & (~15);
     }
 
+#define KCC_NOT_IMPLEMENTED()  throw std::runtime_error(fmt::format("not implemented {}:{}",__FILE__, __LINE__))
+
 }
 
 

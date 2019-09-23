@@ -54,7 +54,8 @@ namespace kcc {
     void Sema::visit(AST::If *ifStmt) {
         ifStmt->cond()->accept(this);
         ifStmt->ifPart()->accept(this);
-        ifStmt->elsePart()->accept(this);
+        if (ifStmt->size() == 3)
+            ifStmt->elsePart()->accept(this);
     }
 
     void Sema::visit(AST::TernaryExpression *) {
@@ -71,7 +72,7 @@ namespace kcc {
     }
 
     void Sema::visit(AST::Return *aReturn) {
-        if(aReturn->size() == 1){
+        if (aReturn->size() == 1) {
             aReturn->first()->accept(this);
         }
     }
@@ -88,6 +89,7 @@ namespace kcc {
             primitiveTypeMap["char"] = Type::getPrimitiveTypes()[Type::EChar];
             primitiveTypeMap["float"] = Type::getPrimitiveTypes()[Type::EFloat];
             primitiveTypeMap["double"] = Type::getPrimitiveTypes()[Type::EDouble];
+            primitiveTypeMap["void"] = Type::getPrimitiveTypes()[Type::EVoid];
         });
 
         type->type = primitiveTypeMap.at(type->repr());
@@ -145,7 +147,7 @@ namespace kcc {
         debug("type:{}\n", type->str());
         auto funcType = convert(type);
         debug("added func {}: {}\n", funcname, funcType->toString());
-        table.addSymbol(funcname, createValue(funcType), funcType);
+        table.symTable->parentScope->addSymbol(funcname, createValue(funcType), funcType);
         func->block()->accept(this);
         popScope();
         func->localAllocatedSize = align16(funcLocalAllocatedSize);
@@ -215,7 +217,7 @@ namespace kcc {
             auto init = decl->init();
             init->accept(this);
             if (!Type::checkBinaryExpr(type, init->type(), "=")) {
-                error(fmt::format("cannot assign {} with {}", init->type()->toString(), type->toString()));
+                error(fmt::format("cannot assign {} to {}", init->type()->toString(), type->toString()));
             }
         }
 
@@ -257,6 +259,12 @@ namespace kcc {
                 error(format("cannot dereference type {}", ty->toString()));
             } else {
                 expr->type() = cast<Type::PointerType *>(ty)->baseType();
+            }
+        } else if (expr->tok() == "&") {
+            if (ty->isPrimitive()) {
+                expr->type() = new Type::PointerType(ty);
+            } else {
+                error(format("cannot have {} on unary operator {}", ty->toString(), expr->tok()));
             }
         } else {
             if (ty->isPrimitive()) {

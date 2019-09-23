@@ -9,6 +9,12 @@ namespace kcc {
     enum Register32 {
         eax = -128, edi, esi, edx, ecx, esp, ebp, ebx, r8d, r9d, r10d, r11d, r12d, r13d, r14d, r15d,
     };
+    enum Register16 {
+        ax = -128, di, si, dx, cx, sp, bp, bx, r8w, r9w, r10w, r11w, r12w, r13w, r14w, r15w,
+    };
+    enum Register8 {
+        al = -128, dil, sil, dl, cl, spl, bpl, bl, r8b, r9b, r10b, r11b, r12b, r13b, r14b, r15b,
+    };
     enum XmmRegister {
         xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7
     };
@@ -52,6 +58,55 @@ namespace kcc {
             REG_TO_STR(r15d)
         }
         return "unkown";
+    }
+
+    inline const char *toString(Register16 x) {
+        switch (x) {
+            REG_TO_STR(ax)
+            REG_TO_STR(bx)
+            REG_TO_STR(cx)
+            REG_TO_STR(dx)
+            REG_TO_STR(di)
+            REG_TO_STR(si)
+            REG_TO_STR(r8w)
+            REG_TO_STR(r9w)
+            REG_TO_STR(r10w)
+            REG_TO_STR(r11w)
+            REG_TO_STR(r12w)
+            REG_TO_STR(r13w)
+            REG_TO_STR(r14w)
+            REG_TO_STR(r15w)
+        }
+        return "unkown";
+    }
+
+    inline const char *toString(Register8 x) {
+        switch (x) {
+            REG_TO_STR(al)
+            REG_TO_STR(bl)
+            REG_TO_STR(cl)
+            REG_TO_STR(dl)
+            REG_TO_STR(dil)
+            REG_TO_STR(sil)
+            REG_TO_STR(r8b)
+            REG_TO_STR(r9b)
+            REG_TO_STR(r10b)
+            REG_TO_STR(r11b)
+            REG_TO_STR(r12b)
+            REG_TO_STR(r13b)
+            REG_TO_STR(r14b)
+            REG_TO_STR(r15b)
+        }
+        return "unkown";
+    }
+
+    inline const char *toString(int x, size_t size) {
+        if (size == 8) {
+            return toString((Register) x);
+        } else if (size == 4) {
+            return toString((Register32) x);
+        }
+        KCC_NOT_IMPLEMENTED();
     }
 }
 #endif //KCC_REGISTERS_H

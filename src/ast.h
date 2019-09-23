@@ -370,7 +370,7 @@ namespace kcc {
 
             void accept(Visitor *) override;
 
-            AST *cond() const { return first(); }
+            Expression *cond() const { return cast<Expression*>(first()); }
 
             AST *body() const { return second(); }
         };
@@ -381,7 +381,7 @@ namespace kcc {
 
             void accept(Visitor *) override;
 
-            AST *cond() const { return first(); }
+            Expression *cond() const { return cast<Expression*>(first()); }
 
             AST *ifPart() const { return second(); }
 

@@ -1,75 +1,77 @@
 #ifndef VISITOR_H
 #define VISITOR_H
+
 #include "ast.h"
-namespace  kcc {
-	namespace AST {
-		class AST;
 
-		class Visitor {
-		public:
-			virtual void visit(For*) = 0;
+namespace kcc {
+    namespace AST {
+        class AST;
 
-			virtual void visit(Identifier*) = 0;
+        class Visitor {
+        public:
+            virtual void visit(For *) {}
 
-			virtual void visit(While*) = 0;
+            virtual void visit(Identifier *) {}
 
-			virtual void visit(Block*) = 0;
+            virtual void visit(While *) {}
 
-			virtual void visit(TopLevel*) = 0;
+            virtual void visit(Block *) {}
 
-			virtual void visit(If*) = 0;
+            virtual void visit(TopLevel *) {}
 
-			virtual void visit(TernaryExpression*) = 0;
+            virtual void visit(If *) {}
 
-			virtual void visit(Number*) = 0;
+            virtual void visit(TernaryExpression *) {}
 
-			virtual void visit(Return*) = 0;
+            virtual void visit(Number *) {}
 
-			virtual void visit(Empty*) = 0;
+            virtual void visit(Return *) {}
 
-			virtual void visit(PrimitiveType*) = 0;
+            virtual void visit(Empty *) {}
 
-			virtual void visit(PointerType*) = 0;
+            virtual void visit(PrimitiveType *) {}
 
-			virtual void visit(ArrayType*) = 0;
+            virtual void visit(PointerType *) {}
 
-			virtual void visit(ArgumentExepressionList*) = 0;
+            virtual void visit(ArrayType *) {}
 
-			virtual void visit(FuncDefArg*) = 0;
+            virtual void visit(ArgumentExepressionList *) {}
 
-			virtual void visit(FuncDef*) = 0;
+            virtual void visit(FuncDefArg *) {}
 
-			virtual void visit(CallExpression*) = 0;
+            virtual void visit(FuncDef *) {}
 
-			virtual void visit(CastExpression*) = 0;
+            virtual void visit(CallExpression *) {}
 
-			virtual void visit(IndexExpression*) = 0;
+            virtual void visit(CastExpression *) {}
 
-			virtual void visit(Declaration*) = 0;
+            virtual void visit(IndexExpression *) {}
 
-			virtual void visit(DeclarationList*) = 0;
+            virtual void visit(Declaration *) {}
 
-			virtual void visit(Literal*) = 0;
+            virtual void visit(DeclarationList *) {}
 
-			virtual void visit(BinaryExpression*) = 0;
+            virtual void visit(Literal *) {}
 
-			virtual void visit(UnaryExpression*) = 0;
+            virtual void visit(BinaryExpression *) {}
 
-			virtual void pre(AST*) {}
+            virtual void visit(UnaryExpression *) {}
 
-			virtual void post(AST*){}
+            virtual void pre(AST *) {}
 
-			virtual void visit(Enum*) = 0;
+            virtual void post(AST *) {}
 
-			virtual void visit(FuncType*) = 0;
+            virtual void visit(Enum *) {}
 
-			virtual void visit(PostfixExpr*) = 0;
+            virtual void visit(FuncType *) {}
 
-			virtual void visit(FuncArgType*) = 0;
+            virtual void visit(PostfixExpr *) {}
 
-			virtual ~Visitor() = default;
-			
-		};
-	}
+            virtual void visit(FuncArgType *) {}
+
+            virtual ~Visitor() = default;
+
+        };
+    }
 }
 #endif // VISITOR_H

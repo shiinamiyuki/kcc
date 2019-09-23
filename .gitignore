@@ -2,3 +2,5 @@ out/
 .vs/
 CMakeFiles/
 cmake-*/
+*.out
+*.s

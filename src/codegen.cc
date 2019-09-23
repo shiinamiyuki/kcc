@@ -45,12 +45,14 @@ namespace kcc {
         auto endLabel = fmt::format(".L{}", labelCounter++);
         emit("{}:", startLabel);
         cond->accept(this);
+        auto size = cond->type()->size();
         auto top = pop();
+        auto suffix = getSuffix(size);
         if (top.isMachineReg()) {
-            emit("cmpq $0, {}", genReg(top));
+            emit("cmp{} $0, {}", suffix, genReg(top, size));
         } else {
-            emit("movq {}, {}", genReg(top), genReg(toscaTemp));
-            emit("cmpq $0, {}", genReg(top), genReg(toscaTemp));
+            emit("mov{} {}, {}", suffix, genReg(top, size), genReg(toscaTemp, size));
+            emit("cmp{} $0, {}", suffix, genReg(top, size), genReg(toscaTemp, size));
         }
         emit("je {}", endLabel);
         body->accept(this);
@@ -64,12 +66,14 @@ namespace kcc {
         auto notTakenLabel = fmt::format(".L{}", labelCounter++);
 
         cond->accept(this);
+        auto size = cond->type()->size();
         auto top = pop();
+        auto suffix = getSuffix(size);
         if (top.isMachineReg()) {
-            emit("cmpq $0, {}", genReg(top));
+            emit("cmp{} $0, {}", suffix, genReg(top, size));
         } else {
-            emit("movq {}, {}", genReg(top), genReg(toscaTemp));
-            emit("cmpq $0, {}", genReg(top), genReg(toscaTemp));
+            emit("mov{} {}, {}", suffix, genReg(top, size), genReg(toscaTemp, size));
+            emit("cmp{} $0, {}", suffix, genReg(top, size), genReg(toscaTemp, size));
         }
         emit("je {}", notTakenLabel);
         ifPart->accept(this);
@@ -80,6 +84,8 @@ namespace kcc {
             auto elsePart = anIf->elsePart();
             elsePart->accept(this);
             emit("{}:", endLabel);
+        } else {
+            emit("{}:", notTakenLabel);
         }
     }
 
@@ -101,7 +107,8 @@ namespace kcc {
         if (aReturn->size() == 1) {
             auto e = cast<AST::Expression *>(aReturn->first());
             e->accept(this);
-            emit("movq {}, %rax", genReg(pop()));
+            auto type = e->type();
+            emit("movq {}, %rax", genReg(pop(), 8));
         }
         emit("jmp {}", currentFunction.functionEndLabel);
     }
@@ -142,11 +149,14 @@ namespace kcc {
         for (int i = 0; i < arg->size(); i++) {
             auto decl = cast<AST::Declaration *>(arg->get(i));
             auto identifier = decl->identifier();
+            auto size = identifier->type()->size();
+            auto suffix = getSuffix(size);
             if (i < systemVArgRegisterN) {
-                emit("movq %{},{} ", toString(systemVArgRegisters[i]), genAddr(identifier->addr));
+                emit("mov{} %{},{} ", suffix, toString(systemVArgRegisters[i], size), genAddr(identifier->addr));
             } else {
-                emit("movq {}(%rbp), %rax", (i - systemVArgRegisterN) * 8 + 16);
-                emit("movq %rax, {}", genAddr(identifier->addr));
+                auto _rax = Reg{true, rax};
+                emit("mov{} {}(%rbp), {}", suffix, (i - systemVArgRegisterN) * 8 + 16, genReg(_rax, size));
+                emit("mov{} {}, {}", suffix, genReg(_rax, size), genAddr(identifier->addr));
             }
         }
 
@@ -187,22 +197,24 @@ namespace kcc {
         for (int64_t i = args->size() - 1; i >= 0; i--) {
             auto e = args->get(i);
             e->accept(this);
+            auto size = cast<AST::Expression *>(e)->type()->size();
+            auto suffix = getSuffix(size);
             auto reg = pop();
             if (i < systemVArgRegisterN) {
                 // store in registers
                 if (reg.isMachineReg()) {
-                    emit("movq {}, %{}", genReg(reg), toString(systemVArgRegisters[i]));
+                    emit("mov{} {}, %{}", suffix, genReg(reg, size), toString(systemVArgRegisters[i], size));
                 } else {
-                    emit("movq {}, {}", genReg(reg), genReg(toscaTemp));
-                    emit("movq {}, %{}", genReg(toscaTemp), toString(systemVArgRegisters[i]));
+                    emit("mov{} {}, {}", suffix, genReg(reg, size), genReg(toscaTemp, size));
+                    emit("mov{} {}, %{}", suffix, genReg(toscaTemp, size), toString(systemVArgRegisters[i], size));
                 }
             } else {
                 // pushed to stack
                 if (reg.isMachineReg()) {
-                    emit("pushq {}", genReg(reg));
+                    emit("pushq {}", genReg(reg, 8));
                 } else {
-                    emit("movq {}, {}", genReg(reg), genReg(toscaTemp));
-                    emit("pushq {}", genReg(toscaTemp));
+                    emit("mov{} {}, {}", suffix, genReg(reg, size), genReg(toscaTemp, size));
+                    emit("pushq {}", genReg(toscaTemp, 8));
                 }
                 pushCount++;
             }
@@ -252,7 +264,7 @@ namespace kcc {
                     cast<AST::Expression *>(declaration->third());
             expr->accept(this);
             auto reg = pop();
-            store(reg, addr);
+            store(reg, addr, expr->type()->size());
         }
     }
 
@@ -286,24 +298,60 @@ namespace kcc {
     void CodeGenerator::visit(AST::BinaryExpression *expression) {
         auto right = cast<AST::Expression *>(expression->rhs());
         auto left = cast<AST::Expression *>(expression->lhs());
+        auto size = std::max(right->type()->size(), left->type()->size());
         if (!isAssignOp(expression->tok())) {
             right->accept(this);
-            left->accept(this);
-            iop(expression->tok());
-        } else {
-            if (typeid(*left) == typeid(AST::Identifier)) {
-                auto identifier = cast<AST::Identifier *>(left);
-                auto addr = identifier->addr;
-                right->accept(this);
-                store(pop(), addr);
-            } else {
-                AssertThrow(false);
+            if (right->type()->isPointer()) {
+                auto stride = cast<Type::PointerType *>(right->type())->baseType()->size();
+                auto &r = stack.back();
+                emit("movq {}, %rax", genReg(r, 8));
+                emit("mulq ${}", stride);
+                emit("movq %rax, {}", genReg(r, 8));
             }
+            left->accept(this);
+            iop(expression->tok(), size);
+        } else {
+//            if (typeid(*left) == typeid(AST::Identifier)) {
+//                auto identifier = cast<AST::Identifier *>(left);
+//                auto addr = identifier->addr;
+//                right->accept(this);
+//                store(pop(), addr, size);
+//            } else {
+//                AssertThrow(false);
+//            }
+            LValueEvaluator evaluator(*this);
+            right->accept(this);
+            left->accept(&evaluator);
+            auto rvalue = pop();
+            auto lvalue = evaluator.stack.back();
+            debug("lvalue :{}\n", lvalue);
+            store(rvalue, lvalue, size);
         }
     }
 
     void CodeGenerator::visit(AST::UnaryExpression *expression) {
+        auto op = expression->tok();
+        if (op == "&") {
+            LValueEvaluator evaluator(*this);
+            expression->first()->accept(&evaluator);
+            push("lea", evaluator.stack.back(), 8);
 
+        } else if (op == "*") {
+            expression->first()->accept(this);
+            auto &top = stack.back();
+            auto size = cast<AST::Expression *>(expression->first())->type()->size();
+            AssertThrow(size == 8);
+            auto suffix = getSuffix(size);
+            if (top.isMachineReg()) {
+                emit("mov{} ({}), {}", suffix, genReg(top, 8), genReg(top, size));
+            } else {
+                emit("movq ({}), %rax", genReg(top, 8));
+                emit("movq (%rax), {}", genReg(top, 8));
+            }
+        } else {
+            expression->first()->accept(this);
+            iUnaryOp(op, expression->type()->size());
+        }
     }
 
     void CodeGenerator::visit(AST::Enum *anEnum) {
@@ -345,9 +393,11 @@ namespace kcc {
             "+=", "-=", "*=", "/=", "%=", "<<=", ">>=", "&=", "|=", "^="
     };
 
-    void CodeGenerator::iop(const std::string &op) {
+    void CodeGenerator::iop(const std::string &op, size_t size) {
         auto top = pop();
         auto &newTop = stack.back();
+        auto _rax = Reg{true, rax};
+        std::string suffix = getSuffix(size);
         std::string opcode;
         if (comparisonOps.find(op) != comparisonOps.end()) {
             if (op == ">") {
@@ -363,32 +413,35 @@ namespace kcc {
             } else if (op == "!=") {
                 opcode = "setne";
             }
-            emit("movq {}, %rax", genReg(newTop));
-            emit("cmpq %rax, {}", genReg(top));
+
+            emit("mov{} {}, {}", suffix, genReg(newTop, size), genReg(_rax, size));
+            emit("cmp{} {}, {}", suffix, genReg(_rax, size), genReg(top, size));
             emit("{} %al", opcode);
-            emit("movzbl %al, {}", genReg(newTop));
+            emit("movzbl %al, {}", genReg(newTop, size));
             return;
         }
 
         if (op == "+") {
-            opcode = "addq";
+            opcode = "add";
         } else if (op == "-") {
-            opcode = "subq";
+            opcode = "sub";
+        } else if (op == "*") {
+            opcode = "imul";
         } else {
             AssertThrow(false);
         }
 
         // newTop = newTop op top
         if (newTop.isMachineReg() && top.isMachineReg()) {
-            emit("{} {}, {}", opcode, genReg(top), genReg(newTop));
+            emit("{}{} {}, {}", opcode, suffix, genReg(top, size), genReg(newTop, size));
         } else if (newTop.isMachineReg() && !top.isMachineReg()) {
-            emit("{} {}, {}", opcode, genReg(top), genReg(newTop));
+            emit("{}{} {}, {}", opcode, suffix, genReg(top, size), genReg(newTop, size));
         } else if (!newTop.isMachineReg() && !top.isMachineReg()) {
-            emit("movq {}, %rax", genReg(newTop));
-            emit("{} {}, %rax", genReg(top));
-            emit("movq %rax, {}", genReg(newTop));
+            emit("mov{} {}, {}", suffix, genReg(newTop, size), genReg(_rax, size));
+            emit("{}{} {}, {}", opcode, suffix, genReg(top, size), genReg(_rax, size));
+            emit("mov{} {}, {}", suffix, genReg(_rax, size), genReg(newTop, size));
         } else {
-            AssertThrow(false);
+            KCC_NOT_IMPLEMENTED();
         }
     }
 
@@ -396,16 +449,23 @@ namespace kcc {
 
     }
 
-    std::string CodeGenerator::genReg(const Reg &r) {
+    std::string CodeGenerator::genReg(const Reg &r, size_t size) {
         if (r.isInt) {
             if (r.isMachineReg()) {
-                auto regName = toString((Register) r.index);
+                std::string regName;
+                if (size == 8)
+                    regName = toString((Register) r.index);
+                else if (size == 4) {
+                    regName = toString((Register32) r.index);
+                } else {
+                    KCC_NOT_IMPLEMENTED();
+                }
                 return fmt::format("%{}", regName);
             } else {
                 return fmt::format("-{}%(rbp)", r.index);
             }
         } else {
-            AssertThrow(false);
+            KCC_NOT_IMPLEMENTED();
         }
     }
 
@@ -424,19 +484,20 @@ namespace kcc {
         stack.push_back(reg);
     }
 
-    void CodeGenerator::push(const std::string &opcode, const std::string &value) {
+    void CodeGenerator::push(const std::string &opcode, const std::string &value, size_t size) {
         Reg reg = stackTopElement();
+        auto suffix = getSuffix(size);
         if (reg.isMachineReg()) {
-            emit("{} {}, {}", opcode, value, genReg(reg));
+            emit("{}{} {}, {}", opcode, suffix, value, genReg(reg, size));
         } else {
-            emit("{} {}, {}", opcode, value, genReg(toscaTemp));
-            emit("movq {}, {}", genReg(toscaTemp), genReg(reg));
+            emit("{}{} {}, {}", opcode, suffix, value, genReg(toscaTemp, size));
+            emit("mov{} {}, {}", suffix, genReg(toscaTemp, size), genReg(reg, size));
         }
         _push(reg);
     }
 
     void CodeGenerator::pushImmInt(int value) {
-        push("movq", fmt::format("${}", value));
+        push("mov", fmt::format("${}", value), 8);
     }
 
     void CodeGenerator::pushIntValue(int addr) {
@@ -448,7 +509,7 @@ namespace kcc {
 //            emit("movq {}, {}", genReg(toscaTemp), genReg(reg));
 //        }
 //        _push(reg);
-        push("movq", genAddr(addr));
+        push("mov", genAddr(addr), 8);
     }
 
     void CodeGenerator::pushRegister(Register) {
@@ -464,18 +525,7 @@ namespace kcc {
 //            emit("movq {}, {}", genReg(toscaTemp), genReg(reg));
 //        }
 //        _push(reg);
-        push("leaq", fmt::format("{}(%rip)", name));
-    }
-
-    void CodeGenerator::pushAddr(int addr) {
-        Reg reg = stackTopElement();
-        if (reg.isMachineReg()) {
-            emit("lea {}, {}", genAddr(addr), genReg(reg));
-        } else {
-            emit("movq ${}, {}", genAddr(addr), genReg(toscaTemp));
-            emit("movq {}, {}", genReg(toscaTemp), genReg(reg));
-        }
-        _push(reg);
+        push("lea", fmt::format("{}(%rip)", name), 8);
     }
 
     void CodeGenerator::pushRet() {
@@ -487,7 +537,7 @@ namespace kcc {
 //            emit("movq {}, {}", genReg(toscaTemp), genReg(reg));
 //        }
 //        _push(reg);
-        push("movq", "%rax");
+        push("mov", "%rax", 8);
     }
 
     std::string originalString(const std::string &s) {
@@ -517,6 +567,35 @@ namespace kcc {
         return out.str();
     }
 
+    void CodeGenerator::iUnaryOp(const std::string &op, size_t size) {
+        if (op == "+") {
+            return;
+        }
+        auto &top = stack.back();
+        auto suffix = getSuffix(size);
+        std::string opcode;
+        auto _rax = Reg{true, rax};
+        if (op == "!") {
+            emit("cmp{} $0, {}", suffix, genReg(top, size));
+            emit("sete %al");
+            emit("movzb{} %al, {}", genReg(top, size));
+            return;
+        }
+        if (op == "-") {
+            opcode = "neg";
+        } else if (op == "~") {
+            opcode = "not";
+        }
+        if (top.isMachineReg()) {
+            emit("{}{} {}", opcode, suffix, genReg(top, size));
+        } else {
+
+            emit("mov{} {}, {}", suffix, genReg(top, size), genReg(_rax, size));
+            emit("{}{} {}", opcode, suffix, genReg(_rax, size));
+            emit("mov{} {}, {}", suffix, genReg(_rax, size), genReg(top, size));
+        }
+    }
+
 
     std::string FunctionCode::generateFunctionCode() {
         std::ostringstream out;
@@ -538,6 +617,48 @@ namespace kcc {
 )";
         out << std::ends;
         return out.str();
+    }
+
+    void CodeGenerator::LValueEvaluator::visit(AST::Identifier *identifier) {
+        stack.push_back(codeGenerator.genAddr(identifier->addr));
+    }
+
+    void CodeGenerator::LValueEvaluator::visit(AST::TernaryExpression *expression) {
+        KCC_NOT_IMPLEMENTED();
+    }
+
+    void CodeGenerator::LValueEvaluator::visit(AST::CallExpression *expression) {
+        KCC_NOT_IMPLEMENTED();
+    }
+
+    void CodeGenerator::LValueEvaluator::visit(AST::CastExpression *expression) {
+        KCC_NOT_IMPLEMENTED();
+    }
+
+    void CodeGenerator::LValueEvaluator::visit(AST::IndexExpression *expression) {
+        KCC_NOT_IMPLEMENTED();
+    }
+
+    void CodeGenerator::LValueEvaluator::visit(AST::BinaryExpression *expression) {
+        expression->accept(&codeGenerator);
+    }
+
+    void CodeGenerator::LValueEvaluator::visit(AST::UnaryExpression *expression) {
+        auto op = expression->tok();
+        if (op != "*") {
+            throw std::runtime_error("ICE");
+        }
+        // op = "*"
+        expression->first()->accept(&codeGenerator);
+        auto r = codeGenerator.pop();
+        if (r.isMachineReg()) {
+            stack.push_back(fmt::format("({})", codeGenerator.genReg(r, 8)));
+        } else {
+            codeGenerator.emit("movq {}, %rax", codeGenerator.genReg(r, 8));
+            stack.push_back("(%rax)");
+        }
+
+
     }
 }
 

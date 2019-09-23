@@ -24,9 +24,46 @@ namespace kcc {
         std::string generateFunctionCode();
     };
 
+    inline std::string getSuffix(size_t size) {
+        std::string suffix;
+        if (size == 8) {
+            suffix = "q";
+        } else if (size == 4) {
+            suffix = "l";
+        } else if (size == 2) {
+            suffix = "w";
+        } else if (size == 1) {
+            suffix = "b";
+        } else {
+            KCC_NOT_IMPLEMENTED();
+        }
+        return suffix;
+    }
 
     class CodeGenerator : public AST::Visitor {
-        size_t labelCounter=  0;
+        class LValueEvaluator : public AST::Visitor {
+        public:
+            std::vector<std::string> stack;
+            CodeGenerator &codeGenerator;
+
+            LValueEvaluator(CodeGenerator &codeGenerator) : codeGenerator(codeGenerator) {}
+
+            void visit(AST::Identifier *identifier) override;
+
+            void visit(AST::TernaryExpression *expression) override;
+
+            void visit(AST::CallExpression *expression) override;
+
+            void visit(AST::CastExpression *expression) override;
+
+            void visit(AST::IndexExpression *expression) override;
+
+            void visit(AST::BinaryExpression *expression) override;
+
+            void visit(AST::UnaryExpression *expression) override;
+        };
+
+        size_t labelCounter = 0;
         std::vector<int> spStack;
         std::vector<Reg> stack;
         std::vector<FunctionCode> compiledFunctions;
@@ -34,15 +71,17 @@ namespace kcc {
         FunctionCode currentFunction;
         size_t sp = 0;
 
-        std::string genReg(const Reg &r);
+        std::string genReg(const Reg &r, size_t);
 
         // push reg onto stack and returns its stored location
         Reg push(int addr);
 
         Reg pop();
 
+        void iUnaryOp(const std::string &op, size_t size);
+
         // eax = eax op ebx
-        void iop(const std::string &op);
+        void iop(const std::string &op, size_t size);
 
         void fop(char op);
 
@@ -59,7 +98,7 @@ namespace kcc {
 
         void _push(const Reg &reg);
 
-        void push(const std::string& opcode, const std::string& value);
+        void push(const std::string &opcode, const std::string &value, size_t);
 
         void pushRet();
 
@@ -67,23 +106,34 @@ namespace kcc {
 
         void pushIntValue(int addr);
 
-        void pushLiteral(const std::string&name);
+        void pushLiteral(const std::string &name);
 
         void pushImmInt(int value);
 
         void pushRegister(Register);
 
-        void store(const Reg &src, int dst) {
+        void store(const Reg &src, int dst, size_t size) {
+            std::string opcode = fmt::format("mov{}", getSuffix(size));
             if (src.isMachineReg()) {
-                emit("movq {}, {}", genReg(src), genAddr(dst));
+                emit("{} {}, {}", opcode, genReg(src, size), genAddr(dst));
             } else {
-                AssertThrow(false);
+                KCC_NOT_IMPLEMENTED();
             }
         }
 
-        void load(int src, const Reg &dst) {
+        void store(const Reg &src, const std::string &lvalue, size_t size) {
+            std::string opcode = fmt::format("mov{}", getSuffix(size));
+            if (src.isMachineReg()) {
+                emit("{} {}, {}", opcode, genReg(src, size), lvalue);
+            } else {
+                KCC_NOT_IMPLEMENTED();
+            }
+        }
+
+        void load(int src, const Reg &dst, size_t size) {
+            std::string opcode = fmt::format("mov{}", getSuffix(size));
             if (dst.isMachineReg()) {
-                emit("movq {}, {}", genAddr(src), genReg(dst));
+                emit("{} {}, {}", opcode, genAddr(src), genReg(dst, size));
             } else {
                 AssertThrow(false);
             }
