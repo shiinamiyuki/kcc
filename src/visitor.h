@@ -15,6 +15,8 @@ namespace kcc {
 
             virtual void visit(While *) {}
 
+            virtual void visit(DoWhile *) {}
+
             virtual void visit(Block *) {}
 
             virtual void visit(TopLevel *) {}
@@ -63,11 +65,25 @@ namespace kcc {
 
             virtual void visit(Enum *) {}
 
+            virtual void visit(Break *) {}
+
+            virtual void visit(Continue *) {}
+
             virtual void visit(FuncType *) {}
+
+            virtual void visit(VariadicArgType *) {}
 
             virtual void visit(PostfixExpr *) {}
 
             virtual void visit(FuncArgType *) {}
+
+            virtual void visit(StructDecl *) {}
+
+            virtual void visit(StructType *) {}
+
+            virtual void visit(MemberAccessExpression *) {}
+
+            virtual void visit(ForwardStructDecl *) {}
 
             virtual ~Visitor() = default;
 

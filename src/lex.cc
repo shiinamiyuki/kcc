@@ -8,7 +8,9 @@
 
 #include "lex.h"
 #include "fmt/format.h"
+
 using namespace kcc;
+
 Token::Token(Type t, const std::string to, int l, int c) {
     type = t;
     line = l;
@@ -93,7 +95,7 @@ int Lexer::isComment() {
     return 0;
 }
 
-Lexer::Lexer(const char * _filename,const std::string &s) {
+Lexer::Lexer(const char *_filename, const std::string &s) {
     filename = _filename;
     pos = 0;
     source = s;
@@ -120,9 +122,9 @@ static std::set<std::string> keywords =
          "_Complex", "_Generic", "_Imaginary", "_Noreturn", "_Static_assert",
          "_Thread_local"};
 static std::vector<std::set<std::string>> operators =
-        {{"&&=", "||=", ">>=", "<<="},
-         {"&&","||","++","--","+=",  "-=",  "*=",  "/=", "%=", "|=", "&=", "^=", ">=", "<=", "!=", "==", "->", ">>", "<<"},
-         {"+",   "-",   "*",   "/",  "%",  "&",  "|",  "^",  "(",  ")",  "[",  "]",  "{",  "}",  ",", "=", "\\", "<", ">", ".", ":",
+        {{"&&=", "||=", ">>=", "<<=", "..."},
+         {"&&",  "||",  "++",  "--",  "+=", "-=", "*=", "/=", "%=", "|=", "&=", "^=", ">=", "<=", "!=", "==", "->", ">>", "<<"},
+         {"+",   "-",   "*",   "/",   "%",  "&",  "|",  "^",  "(",  ")",  "[",  "]",  "{",  "}",  ",",  "=",  "\\", "<",  ">", ".", ":",
                  "?", "~", "!"}};
 static std::set<char> opChar =
         {'+', '-', '*', '/', '%', '^', '>', '<', '!',
@@ -150,7 +152,7 @@ void Lexer::scan() {
         skipspace();
         while (pos < source.length()) {
             auto tok = next();
-            if(tokenStream.size() > 0) {
+            if (tokenStream.size() > 0) {
                 auto last = tokenStream.back();
                 if (last.type == tok.type && tok.type == Token::Type::String) {
                     auto s = last.tok;
@@ -166,7 +168,7 @@ void Lexer::scan() {
                     continue;
                 }
             }
-             tokenStream.push_back(tok);
+            tokenStream.push_back(tok);
             skipspace();
         }
     } catch (std::runtime_error &e) {
@@ -192,7 +194,7 @@ Token Lexer::identifier() {
 
 Token Lexer::number() {
     std::string number;
-    Token::Type ty =  Token::Type::Int;
+    Token::Type ty = Token::Type::Int;
     if (cur() == '0' && peek() == 'x') {
         number += cur();
         number += peek();
@@ -214,7 +216,7 @@ Token Lexer::number() {
             consume();
         }
         if (cur() == '.') {
-            ty =  Token::Type::Float;
+            ty = Token::Type::Float;
             number += cur();
             consume();
             while (isdigit(cur())) {
@@ -223,7 +225,7 @@ Token Lexer::number() {
             }
         }
         if (cur() == 'e') {
-            ty =  Token::Type::Float;
+            ty = Token::Type::Float;
             number += cur();
             if (peek() == '-') {
                 consume();
@@ -235,8 +237,8 @@ Token Lexer::number() {
                 consume();
             }
         }
-        if(cur() == 'f'){
-            ty =  Token::Type::Float;
+        if (cur() == 'f') {
+            ty = Token::Type::Float;
             number += cur();
             consume();
         }
@@ -275,31 +277,31 @@ Token Lexer::punctuator() {
 
 Token Lexer::string() {
     std::string s;
-  //  s += cur();
+    //  s += cur();
     char c = cur();
     consume();
     while (cur() != c) {
         if (cur() == '\\') {
             consume();
             if (cur() == '\\') {
-                s += "\\\\";
+                s += "\\";
             } else if (cur() == 'n') {
-                s += "\\n";
+                s += "\n";
             } else if (cur() == '"') {
-                s += "\\\"";
+                s += "\"";
             } else if (cur() == '\'') {
-                s += "\\\'";
+                s += "\'";
             }
         } else
             s += cur();
         consume();
     }
     consume();
-   // s += c;
-    if(s[0] == '\'' ){
-        if(s.length()!=3)
+    // s += c;
+    if (c == '\'') {
+        if (s.length() > 1)
             throw std::runtime_error(std::string("char literal to long"));
-        return makeToken(Token::Type::Int,fmt::format("{}",(int)s[1]),line, col);
+        return makeToken(Token::Type::Int, fmt::format("{}",s.length() == 1 ?  (int) s[0] : 0), line, col);
     }
 
     return makeToken(Token::Type::String, s, line, col);

@@ -37,6 +37,7 @@ namespace kcc {
             REG_TO_STR(r14)
             REG_TO_STR(r15)
         }
+        AssertThrow(false);
         return "unkown";
     }
 
@@ -57,6 +58,7 @@ namespace kcc {
             REG_TO_STR(r14d)
             REG_TO_STR(r15d)
         }
+        AssertThrow(false);
         return "unkown";
     }
 
@@ -77,6 +79,7 @@ namespace kcc {
             REG_TO_STR(r14w)
             REG_TO_STR(r15w)
         }
+        AssertThrow(false);
         return "unkown";
     }
 
@@ -97,6 +100,7 @@ namespace kcc {
             REG_TO_STR(r14b)
             REG_TO_STR(r15b)
         }
+        AssertThrow(false);
         return "unkown";
     }
 
@@ -105,6 +109,10 @@ namespace kcc {
             return toString((Register) x);
         } else if (size == 4) {
             return toString((Register32) x);
+        }  else if (size == 2) {
+            return toString((Register16) x);
+        }  else if (size == 1) {
+            return toString((Register8) x);
         }
         KCC_NOT_IMPLEMENTED();
     }

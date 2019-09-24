@@ -10,7 +10,6 @@
 
 #include "kcc.h"
 #include "lex.h"
-#include "value.hpp"
 #include "registers.h"
 
 namespace kcc {
@@ -30,12 +29,14 @@ namespace kcc {
             filename = _filename;
         }
     };
+
     struct Reg {
         bool isInt = true;
         int index;
-        bool isMachineReg()const{
-            if(isInt){
-                return index <= r14;
+
+        bool isMachineReg() const {
+            if (isInt) {
+                return index <= r15;
             }
             AssertThrow(false);
         }
@@ -56,11 +57,6 @@ namespace kcc {
             virtual void linkRec();
 
         public:
-            bool isFloat;
-            bool isGlobal;
-            unsigned int scale;
-
-
             SourcePos pos;
 
             AST();
@@ -150,7 +146,6 @@ namespace kcc {
             kcc::Type::IType *_type = nullptr;
             Reg _reg;
         public:
-            Value value;
 
             Reg &reg() {
                 return _reg;
@@ -177,10 +172,9 @@ namespace kcc {
         public:
             explicit BinaryExpression(const Token &t) {
                 content = t;
-                scale = 1;
             }
 
-            BinaryExpression() { scale = 1; }
+            BinaryExpression() {}
 
             const std::string kind() const override { return "BinaryExpression"; }
 
@@ -222,11 +216,25 @@ namespace kcc {
             const std::string kind() const override { return "TernaryExpression"; }
 
             void accept(Visitor *) override;
+
+            Expression *cond() {
+                return cast<Expression *>(first());
+            }
+
+            Expression *part1() {
+                return cast<Expression *>(second());
+            }
+
+            Expression *part2() {
+                return cast<Expression *>(third());
+            }
         };
 
         class Identifier : public Expression {
         public:
             size_t addr;
+            bool isGlobal = false;
+
             Identifier() = default;
 
             explicit Identifier(const Token &t) { content = t; }
@@ -235,7 +243,7 @@ namespace kcc {
 
             void accept(Visitor *) override;
 
-            std::string info()const override;
+            std::string info() const override;
         };
 
         class Number : public Expression {
@@ -248,9 +256,9 @@ namespace kcc {
 
             void accept(Visitor *) override;
 
-            int getInt() {
+            int64_t getInt() {
                 std::istringstream in(tok());
-                int i;
+                int64_t i;
                 in >> i;
                 return i;
             }
@@ -290,6 +298,19 @@ namespace kcc {
 
         class ArgumentExepressionList;
 
+        class MemberAccessExpression : public BinaryExpression {
+        public:
+            explicit MemberAccessExpression(const Token &t) {
+                content = t;
+            }
+
+            size_t offset = 0;
+
+            const std::string kind() const override { return "MemberAccessExpression"; }
+
+            void accept(Visitor *) override;
+        };
+
         class CallExpression : public Expression {
         public:
             const std::string kind() const override { return "CallExpression"; }
@@ -320,6 +341,18 @@ namespace kcc {
 
             virtual std::string repr() const { return std::string(); }
         };
+
+        class StructType : public TypeDeclaration {
+        public:
+            std::string name;
+
+            const std::string kind() const override { return "StructType"; }
+
+            void accept(Visitor *) override;
+
+            std::string repr() const { return tok(); }
+        };
+
 
         class PrimitiveType : public TypeDeclaration {
         public:
@@ -370,9 +403,20 @@ namespace kcc {
 
             void accept(Visitor *) override;
 
-            Expression *cond() const { return cast<Expression*>(first()); }
+            Expression *cond() const { return cast<Expression *>(first()); }
 
             AST *body() const { return second(); }
+        };
+
+        class DoWhile : public AST {
+        public:
+            const std::string kind() const override { return "DoWhile"; }
+
+            void accept(Visitor *) override;
+
+            Expression *cond() const { return cast<Expression *>(second()); }
+
+            AST *body() const { return first(); }
         };
 
         class If : public AST {
@@ -381,7 +425,7 @@ namespace kcc {
 
             void accept(Visitor *) override;
 
-            Expression *cond() const { return cast<Expression*>(first()); }
+            Expression *cond() const { return cast<Expression *>(first()); }
 
             AST *ifPart() const { return second(); }
 
@@ -433,11 +477,29 @@ namespace kcc {
             void accept(Visitor *) override;
         };
 
+        class StructDecl : public AST {
+        public:
+            std::string name;
+
+            const std::string kind() const override { return "StructDecl"; }
+
+            void accept(Visitor *) override;
+        };
+
+        class ForwardStructDecl : public AST {
+        public:
+            std::string name;
+
+            const std::string kind() const override { return "ForwardStructDecl"; }
+
+            void accept(Visitor *) override;
+        };
+
         class FuncType;
 
         class FuncDef : public AST {
         public:
-           size_t localAllocatedSize =0;
+            size_t localAllocatedSize = 0;
 
             const std::string kind() const override { return "FuncDef"; }
 
@@ -486,6 +548,13 @@ namespace kcc {
             FuncDefArg *arg() const { return cast<FuncDefArg *>(second()); }
         };
 
+        class VariadicArgType : public TypeDeclaration {
+        public:
+            const std::string kind() const override { return "VariadicArgType"; }
+
+            void accept(Visitor *) override;
+        };
+
         class Return : public AST {
         public:
             const std::string kind() const override { return "Return"; }
@@ -501,14 +570,14 @@ namespace kcc {
 
             AST *init() const { return first(); }
 
-            AST *cond() const { return second(); }
+            Expression *cond() const { return cast<Expression *>(second()); }
 
-            AST *step() const { return third(); }
+            Expression *step() const { return cast<Expression *>(third()); }
 
             AST *body() const { return forth(); }
         };
 
-        class Empty : public AST {
+        class Empty : public Expression {
         public:
             const std::string kind() const override { return "Empty"; }
 
@@ -518,6 +587,20 @@ namespace kcc {
         class Enum : public AST {
         public:
             const std::string kind() const override { return "Enum"; }
+
+            void accept(Visitor *) override;
+        };
+
+        class Break : public AST {
+        public:
+            const std::string kind() const override { return "Break"; }
+
+            void accept(Visitor *) override;
+        };
+
+        class Continue : public AST {
+        public:
+            const std::string kind() const override { return "Continue"; }
 
             void accept(Visitor *) override;
         };

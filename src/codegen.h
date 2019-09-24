@@ -4,7 +4,6 @@
 
 
 #include "visitor.h"
-#include "value.hpp"
 #include "type.hpp"
 #include "registers.h"
 #include "ir.h"
@@ -56,6 +55,8 @@ namespace kcc {
 
             void visit(AST::CastExpression *expression) override;
 
+            void visit(AST::MemberAccessExpression *expression) override;
+
             void visit(AST::IndexExpression *expression) override;
 
             void visit(AST::BinaryExpression *expression) override;
@@ -64,10 +65,13 @@ namespace kcc {
         };
 
         size_t labelCounter = 0;
+        std::vector<std::string> loopStartLabelStack;
+        std::vector<std::string> loopEndLabelStack;
         std::vector<int> spStack;
         std::vector<Reg> stack;
         std::vector<FunctionCode> compiledFunctions;
         std::unordered_map<std::string, std::string> literals;
+        std::unordered_map<std::string, std::pair<std::string, size_t>> globals;
         FunctionCode currentFunction;
         size_t sp = 0;
 
@@ -95,7 +99,10 @@ namespace kcc {
 
         Reg stackTopElement();
 
+    public:
+        void visit(AST::MemberAccessExpression *expression) override;
 
+    private:
         void _push(const Reg &reg);
 
         void push(const std::string &opcode, const std::string &value, size_t);
@@ -104,7 +111,7 @@ namespace kcc {
 
         void pushAddr(int addr);
 
-        void pushIntValue(int addr);
+        void pushIntValue(int addr, size_t size);
 
         void pushLiteral(const std::string &name);
 
@@ -126,7 +133,9 @@ namespace kcc {
             if (src.isMachineReg()) {
                 emit("{} {}, {}", opcode, genReg(src, size), lvalue);
             } else {
-                KCC_NOT_IMPLEMENTED();
+                Reg _rax{true, rax};
+                emit("{} {}, {} ", opcode, genReg(src, size), genReg(_rax, size));
+                emit("{} {}, {}", opcode, genReg(_rax, size), lvalue);
             }
         }
 
@@ -156,9 +165,19 @@ namespace kcc {
         }
 
     public:
+        void pre(AST::AST *ast) override;
+
+        void post(AST::AST *ast) override;
+
         void visit(AST::For *aFor) override;
 
         void visit(AST::Identifier *identifier) override;
+
+        void visit(AST::Break *aBreak) override;
+
+        void visit(AST::Continue *aContinue) override;
+
+        void visit(AST::DoWhile *aWhile) override;
 
         void visit(AST::While *aWhile) override;
 

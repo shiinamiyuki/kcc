@@ -4,6 +4,8 @@
 
 namespace kcc {
     namespace Type {
+        bool equal(IType *a, IType *b);
+
         const std::array<PrimitiveType *, ETotalPrimitiveType> &getPrimitiveTypes() {
             static std::array<PrimitiveType *, ETotalPrimitiveType> arr;
             static std::once_flag flag;
@@ -74,11 +76,14 @@ namespace kcc {
             return nullptr;
         }
 
-        PrimitiveType *checkBinaryExpr(PointerType *left, PointerType *right, const std::string &op) {
+        IType *checkBinaryExpr(PointerType *left, PointerType *right, const std::string &op) {
             if (op == "-") {
                 return getPrimitiveTypes()[EULongLong];
             }
-            return nullptr;
+            if (left->baseType()->isPrimitive() && cast<PrimitiveType *>(left->baseType())->type() == EVoid) {
+                return left;
+            }
+            return equal(left, right) ? left : nullptr;
         }
 
         PrimitiveType *checkBinaryExpr(PrimitiveType *left, PrimitiveType *right, const std::string &op) {
@@ -119,6 +124,12 @@ namespace kcc {
                     return left;
                 return nullptr;
             }
+            if (left->isStruct()) {
+                return nullptr;
+            }
+            if (right->isStruct()) {
+                return nullptr;
+            }
             if (left->isPrimitive() && right->isPrimitive()) {
                 return checkBinaryExpr(cast<PrimitiveType *>(left), cast<PrimitiveType *>(right), op);
             }
@@ -151,11 +162,20 @@ namespace kcc {
             if (a->isPointer() && b->isPointer()) {
                 return equal(cast<PointerType *>(a)->baseType(), cast<PointerType *>(b)->baseType());
             }
+            if (a->isStruct()) {
+                if (!b->isStruct()) {
+                    return false;
+                }
+                return cast<StructType *>(a)->name == cast<StructType *>(b)->name;
+            }
             debug("uncovered case {} {}\n", a->toString(), b->toString());
             return false;
         }
 
         bool convertible(IType *from, IType *to) {
+            if (from == to) {
+                return true;
+            }
             if (from->isPrimitive() && to->isPrimitive()) {
                 return true;
             }
@@ -171,7 +191,10 @@ namespace kcc {
                 return true;
             }
             if (from->isPointer() && to->isPointer()) {
-                return equal(from, to);
+                if (equal(from, to)) {
+                    return true;
+                }
+                return convertible(cast<PointerType *>(from)->baseType(), cast<PointerType *>(to)->baseType());
             }
             if (from->isPointer() && to->isFloat()) {
                 return false;
@@ -179,7 +202,29 @@ namespace kcc {
             if (from->isFloat() && to->isPointer()) {
                 return false;
             }
+            if (from->isStruct()) {
+                if (!to->isStruct()) {
+                    return false;
+                }
+                return cast<StructType *>(from)->name == cast<StructType *>(to)->name;
+            }
             debug("uncovered case {} {}\n", from->toString(), to->toString());
+            return false;
+        }
+
+        bool canCast(IType *from, IType *to) {
+            if (from->isPrimitive() && to->isPrimitive()) {
+                return convertible(from, to);
+            }
+            if (from->isPointer() && to->isPointer()) {
+                return true;
+            }
+            if (from->isInt() && to->isPointer()) {
+                return true;
+            }
+            if (from->isPointer() && to->isInt()) {
+                return true;
+            }
             return false;
         }
 

@@ -12,8 +12,6 @@
 #include "type.hpp"
 
 kcc::AST::AST::AST() {
-    isFloat = false;
-    isGlobal = false;
 }
 
 void kcc::AST::AST::linkRec() {
@@ -61,13 +59,16 @@ std::string kcc::AST::Expression::info() const {
     }
     return AST::info();
 }
+
 std::string kcc::AST::Identifier::info() const {
 
     if (type() != nullptr) {
-        return fmt::format("{}[{}] type: {}, addr:{}\n", kind(), content.tok, type()->toString(), addr);
+        return fmt::format("{}[{}] type: {}, addr:{}, isGlobal: {}\n", kind(), content.tok, type()->toString(), addr,
+                           isGlobal);
     }
     return AST::info();
 }
+
 std::string kcc::AST::ArrayType::info() const {
     return format("{}[{}]\n", kind(), arrSize);
 }
@@ -102,6 +103,8 @@ AST_ACCEPT(If)
 
 AST_ACCEPT(While)
 
+AST_ACCEPT(DoWhile)
+
 AST_ACCEPT(TopLevel)
 
 AST_ACCEPT(Declaration)
@@ -111,7 +114,6 @@ AST_ACCEPT(PrimitiveType)
 AST_ACCEPT(FuncDef)
 
 AST_ACCEPT(FuncDefArg)
-
 
 AST_ACCEPT(Return)
 
@@ -129,11 +131,25 @@ AST_ACCEPT(Empty)
 
 AST_ACCEPT(Enum)
 
+AST_ACCEPT(Break)
+
+AST_ACCEPT(Continue)
+
 AST_ACCEPT(FuncType)
+
+AST_ACCEPT(VariadicArgType)
 
 AST_ACCEPT(PostfixExpr)
 
 AST_ACCEPT(FuncArgType)
+
+AST_ACCEPT(StructDecl)
+
+AST_ACCEPT(ForwardStructDecl)
+
+AST_ACCEPT(StructType)
+
+AST_ACCEPT(MemberAccessExpression)
 
 kcc::AST::FuncType *kcc::AST::FuncDef::extractCallSignature() {
     auto f = new FuncType();

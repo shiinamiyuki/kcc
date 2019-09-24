@@ -2,20 +2,21 @@
 #define KCC_SEMA_H
 
 #include "visitor.h"
-#include "value.hpp"
 #include "type.hpp"
 
 namespace kcc {
     struct VarInfo {
         std::string name;
-        Value value;
         Type::IType *type = nullptr;
         size_t addr;
+        bool isGlobal = false;
+        bool isTypedef = false;
+        bool isStruct = false;
 
         VarInfo() = default;
 
-        VarInfo(const std::string &name, const Value &v, Type::IType *t, size_t addr)
-                : name(name), value(v), type(t), addr(addr) {}
+        VarInfo(const std::string &name, Type::IType *t, size_t addr)
+                : name(name), type(t), addr(addr) {}
     };
 
     struct ScopedSymbolTable {
@@ -23,10 +24,13 @@ namespace kcc {
         ScopedSymbolTable *parentScope = nullptr;
         size_t localOffset = 0;
 
-        void addSymbol(const std::string &name, Value value, Type::IType *type) {
+        void addSymbol(const std::string &name, Type::IType *type) {
             AssertThrow(type);
             localOffset += type->size();
-            VarInfo info(name, value, type, localOffset);
+            VarInfo info(name, type, localOffset);
+            if (!parentScope) {
+                info.isGlobal = true;
+            }
             infos[name] = info;
         }
 
@@ -50,9 +54,13 @@ namespace kcc {
             symTable->localOffset = 0;
         }
 
-        void addSymbol(const std::string &name, Value value, Type::IType *type) {
+        void addSymbol(const std::string &name, Type::IType *type) {
             AssertThrow(type);
-            symTable->addSymbol(name, std::move(value), type);
+            symTable->addSymbol(name, type);
+        }
+
+        void addSymbol(const VarInfo &info) {
+            symTable->infos[info.name] = info;
         }
 
         const VarInfo &find(const std::string &name) const {
@@ -62,7 +70,7 @@ namespace kcc {
         void pushScope() {
             auto tmp = new ScopedSymbolTable();
             tmp->parentScope = symTable;
-            if(!underGlobal())
+            if (!underGlobal())
                 tmp->localOffset = tmp->parentScope->localOffset;
             symTable = tmp;
 
@@ -73,7 +81,8 @@ namespace kcc {
             symTable = symTable->parentScope;
             delete tmp;
         }
-        bool underGlobal()const{
+
+        bool underGlobal() const {
             return symTable->parentScope == nullptr;
         }
     };
@@ -81,15 +90,47 @@ namespace kcc {
     class Sema : public AST::Visitor {
         SymbolTable table;
 
-        Value createValue(Type::IType *type);
+        class LValueChecker : public AST::Visitor {
+            Sema * sema;
+        public:
+            std::vector<int> stack;
+
+
+            LValueChecker(Sema * sema):sema(sema){}
+
+            void visit(AST::Identifier *identifier) override;
+
+            void visit(AST::TernaryExpression *expression) override;
+
+            void visit(AST::Number *number) override;
+
+            void visit(AST::CallExpression *expression) override;
+
+            void visit(AST::CastExpression *expression) override;
+
+            void visit(AST::Literal *literal) override;
+
+            void visit(AST::BinaryExpression *expression) override;
+
+            void visit(AST::UnaryExpression *expression) override;
+
+            void visit(AST::PostfixExpr *expr) override;
+
+        };
 
         size_t floatRegCounter = 0;
         size_t intRegCounter = 0;
         size_t funcLocalAllocatedSize = 0;
+    public:
+        void visit(AST::DoWhile *aWhile) override;
+
+    private:
         std::vector<SourcePos> sourcePosStack;
 
         void pushScope();
+
         void popScope();
+
     public:
         void error(const std::string &message);
 
@@ -99,6 +140,8 @@ namespace kcc {
         virtual void visit(AST::Identifier *) override;
 
         virtual void visit(AST::While *) override;
+
+        void visit(AST::MemberAccessExpression *expression) override;
 
         virtual void visit(AST::Block *) override;
 
@@ -113,6 +156,8 @@ namespace kcc {
         virtual void visit(AST::Return *) override;
 
         virtual void visit(AST::Empty *) override;
+
+        void visit(AST::StructDecl *decl) override;
 
         virtual void visit(AST::PrimitiveType *) override;
 
@@ -151,6 +196,8 @@ namespace kcc {
         virtual void visit(AST::FuncType *) override;
 
         virtual void visit(AST::PostfixExpr *) override;
+
+        void visit(AST::StructType *type) override;
 
         virtual void visit(AST::FuncArgType *) override;
     };

@@ -12,11 +12,50 @@
 #include "lex.h"
 #include "ast.h"
 #include "config.h"
+
 namespace kcc {
 
     class Parser {
         std::vector<Token> tokenStream;
-        std::set<std::string> types;
+
+        struct Types {
+            Types() {
+                push();
+                add("int");
+                add("short");
+                add("char");
+                add("unsigned");
+                add("float");
+                add("signed");
+                add("long");
+                add("double");
+                add("void");
+            }
+
+            std::vector<std::set<std::string>> types;
+
+            void push() {
+                types.emplace_back();
+            }
+
+            void pop() {
+                types.pop_back();
+            }
+
+            void add(const std::string &s) {
+                types.back().insert(s);
+            }
+
+            bool contains(const std::string &s) {
+                for (auto iter = types.rbegin(); iter != types.rend(); iter++) {
+                    if (iter->find(s) != iter->end())return true;
+                }
+                return false;
+            }
+        };
+
+        bool canItBeSomeKindOfType(const std::string& s);
+        Types types;
         std::unordered_map<std::string, int> opPrec;
         std::unordered_map<std::string, int> opAssoc; //1 for left 0 for right
         std::set<std::string> typeSpecifiers;
@@ -31,55 +70,57 @@ namespace kcc {
             return new T();
         }
 
-		AST::AST *parseExpr(int);
+        AST::AST *parseExpr(int);
 
-		AST::BinaryExpression *hackExpr(AST::BinaryExpression *);
+        AST::BinaryExpression *hackExpr(AST::BinaryExpression *);
 
-		AST::AST *parseUnary();
+        AST::AST *parseUnary();
 
-		AST::AST *parsePostfix();
+        AST::AST *parsePostfix();
 
-		AST::AST *parsePrimary();
+        AST::AST *parsePrimary();
 
-		AST::AST *parseTernary(AST::AST *cond);
+        AST::AST *parseTernary(AST::AST *cond);
 
-		AST::AST *parseCastExpr();
+        AST::AST *parseCastExpr();
 
-		AST::AST *parseArgumentExpressionList();
+        AST::AST *parseArgumentExpressionList();
 
-		AST::AST *parseBlock();
+        AST::AST *parseBlock();
 
-		AST::AST *parseIf();
+        AST::AST *parseIf();
 
-		AST::AST *parseWhile();
+        AST::AST *parseWhile();
 
-		AST::AST *parseStmt();
+        AST::AST *parseDoWhile();
 
-		AST::AST *parseTypeSpecifier();
+        AST::AST *parseStmt();
 
-		AST::AST *parseParameterType();
+        AST::AST *parseTypeSpecifier();
 
-		AST::AST *parseDecl();
+        AST::AST *parseParameterType();
 
-		AST::AST *parseEnum();
+        AST::AST *parseDecl();
 
-		AST::AST *parseGlobalDefs();
+        AST::AST *parseEnum();
 
-		AST::AST *parseDeclarationSpecifier();
+        AST::AST *parseGlobalDefs();
 
-		AST::AST *parseTypeName();
+        AST::AST *parseDeclarationSpecifier();
+
+        AST::AST *parseTypeName();
 
         void parseAbstractDirectDeclarator();
 
         void parseAbstractDeclarator();
 
-		AST::AST *extractIdentifier(AST::AST *);
+        AST::AST *extractIdentifier(AST::AST *);
 
         void parseDirectDeclarator();
 
         void parseDeclarator();
 
-		AST::AST *convertFuncTypetoFuncDef(AST::AST *);
+        AST::AST *convertFuncTypetoFuncDef(AST::AST *);
 
         void parseDirectDeclarator_();
 
@@ -87,22 +128,24 @@ namespace kcc {
 
         void parseFunctionDeclarator();
 
-		AST::AST *parseFuncDef();
+        AST::AST *parseFuncDef();
 
-		AST::AST *parseFuncDefArg();
+        AST::AST *parseFuncDefArg();
 
-		AST::AST *parseReturn();
+        AST::AST *parseReturn();
 
-		AST::AST *parseFor();
+        AST::AST *parseFor();
+
+        AST::AST *parseStruct();
 
         void expect(const std::string &token);
 
         bool has(const std::string &token);
 
         template<typename T, typename... Args>
-        T *makeNode(Args... args) {
+        T *makeNode(Args &&... args) {
             auto t = new T(args...);
-            t->pos = SourcePos(peek().filename,peek().line, peek().col);
+            t->pos = SourcePos(peek().filename, peek().line, peek().col);
             return t;
         }
 
@@ -125,9 +168,9 @@ namespace kcc {
             return pos + 1 < (int) tokenStream.size();
         }
 
-		AST::AST* error(const std::string &message);
+        void error(const std::string &message);
 
-		AST::AST *parse();
+        AST::AST *parse();
     };
 
     class ParserException : public std::exception {

@@ -6,13 +6,26 @@
 namespace kcc {
     namespace Type {
         class Qualifier {
+        public:
+            enum Type {
+                Extern,
+                Static,
+                Const,
+                Volatile
+            };
+            std::set<Type> q;
 
+            bool is(Type t) {
+                return q.find(t) != q.end();
+            }
         };
 
         class IType {
         public:
 
             virtual size_t size() const = 0;
+
+            virtual bool isArray() const = 0;
 
             virtual bool isFloat() const = 0;
 
@@ -26,7 +39,7 @@ namespace kcc {
 
             virtual std::string toString() const = 0;
 
-            bool isPointer() const { return !isPrimitive() && !isStruct(); }
+            virtual bool isPointer() const { return !isPrimitive() && !isStruct() && !isArray(); }
 
         };
 
@@ -82,6 +95,10 @@ namespace kcc {
                 return false;
             }
 
+            bool isArray() const override {
+                return false;
+            }
+
             std::string toString() const;
 
             size_t size() const override {
@@ -105,6 +122,43 @@ namespace kcc {
                         return 8;
                 }
             }
+        };
+
+        class VariadicType : public IType {
+        public:
+            size_t size() const override {
+                return 0;
+            }
+
+            bool isFloat() const override {
+                return false;
+            }
+
+            bool isInt() const override {
+                return false;
+            }
+
+            bool isPrimitive() const override {
+                return false;
+            }
+
+            bool isStruct() const override {
+                return false;
+            }
+
+            bool isFunction() const override {
+                return false;
+            }
+
+            bool isArray() const override {
+                return false;
+            }
+
+            std::string toString() const override {
+                return "...";
+            }
+
+        public:
         };
 
         class PointerType : public IType {
@@ -143,6 +197,59 @@ namespace kcc {
             size_t size() const override {
                 return 8;
             }
+
+            bool isArray() const override {
+                return false;
+            }
+
+        };
+
+        class ArrayType : public IType {
+            IType *_baseType;
+            size_t _length;
+        public:
+            IType *baseType() const {
+                return _baseType;
+            };
+
+            size_t length() const {
+                return _length;
+            };
+
+            ArrayType(IType *base, size_t N) : _baseType(base), _length(N) {}
+
+            bool isFloat() const override {
+                return false;
+            }
+
+            bool isInt() const override {
+                return false;
+            }
+
+            bool isPrimitive() const override {
+                return false;
+            }
+
+            bool isStruct() const override {
+                return false;
+            }
+
+            std::string toString() const override {
+                return format("{} [{}}", _baseType->toString(), _length);
+            }
+
+            bool isFunction() const override {
+                return false;
+            }
+
+            size_t size() const override {
+                return _baseType->size() * _length;
+            }
+
+            bool isArray() const override {
+                return true;
+            }
+
         };
 
         class FunctionType : public IType {
@@ -190,6 +297,75 @@ namespace kcc {
             size_t size() const override {
                 return 8;
             }
+
+            bool isArray() const override {
+                return false;
+            }
+
+        };
+
+        struct StructMember {
+            std::string name;
+            size_t offset;
+            IType *type = nullptr;
+        };
+
+        class StructType : public IType {
+            size_t _size;
+        public:
+            std::string name;
+            std::unordered_map<std::string, StructMember> members;
+
+            bool contains(const std::string &s) {
+                return members.find(s) != members.end();
+            }
+
+            StructMember &get(const std::string &s) {
+                return members.at(s);
+            }
+
+            void add(const std::string &s, const StructMember &m) {
+                members[s] = m;
+            }
+
+            StructType(size_t size = -1) : _size(size) {}
+
+            void setSize(size_t s) { _size = s; }
+
+            size_t size() const override {
+                return _size;
+            }
+
+            bool isFloat() const override {
+                return false;
+            }
+
+            bool isInt() const override {
+                return false;
+            }
+
+            bool isPrimitive() const override {
+                return false;
+            }
+
+            bool isStruct() const override {
+                return true;
+            }
+
+            bool isFunction() const override {
+                return false;
+            }
+
+            std::string toString() const override {
+                return name;
+            }
+
+            bool isArray() const override {
+                return false;
+            }
+
+
+        public:
         };
 
         const std::array<PrimitiveType *, ETotalPrimitiveType> &getPrimitiveTypes();
@@ -197,6 +373,8 @@ namespace kcc {
         bool convertible(IType *from, IType *to);
 
         IType *checkBinaryExpr(IType *left, IType *right, const std::string &op);
+
+        bool canCast(IType *from, IType *to);
     }
 }
 

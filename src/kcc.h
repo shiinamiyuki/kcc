@@ -51,7 +51,9 @@ namespace kcc {
     inline void panic(const std::string& message) {
         std::cerr << format("Internal Compiler Error: {}", message) << std::endl;
     }
-
+    inline size_t align8(size_t x){
+        return (x + 7) & (~7);
+    }
     inline size_t align16(size_t x){
         return (x + 15) & (~15);
     }

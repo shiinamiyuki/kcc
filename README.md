@@ -1,36 +1,21 @@
-# 摸鱼一时爽，一直摸一直爽
-
 # kcc
-A small C Compiler (in progress) </br>
-This aims to be a full C11 compilant optimizing compiler.
+A small C compiler (in progress) 
+This aims to be a full C11 compilant compiler.
 
-
-## Stages: </br>
-1.  Lexer (almost done, without preprocessor)
+## Stages: 
+1.  Lexer (without preprocessor)
 2.  Parser (supports basic syntax)
-3.  Semantic Analysis (only the basic type checks)
-4.  Three-Address form IR Generation (supports local variables, if, while, for)
-5.  SSA-based IR Generation (Fixing bugs with renaming)
-6.  Optimizations
-7.  Graph-Coloring Register Allocation
-8.  x64 Assembly Generation
+3.  Semantic Analysis
+4.  Code Generation (System V ABI compatible)
 
-# How to build kcc:
-Well, download the source and run CMake. However, at this point, the compiler doesn't support any arguments so it must run down the same directory as that of 'test.c'.
-
-# More info about this project:
+## More info about this project:
 What's the purpose of this project? </br>
-In brief, to learn optimizing techniques as well as the C11 language.
+~~In brief, to learn optimizing techniques as well as the C11 language.~~  Unfortunately, my time is limited. I might not have time to implement SSA-based optimizations. So now the first goal is to make it C11 compliant.
+
 
 Why using C++ instead of C? </br>
 Because this is an optimizing compiler, which focuses on algorithm rather that the ability of bootstrapping. Another reason is that C++ makes it easier to organize large amount of code, which is crucial, considering this is a one-man project. I don't have much time working on this project so i don't want to waste my time on segfaults.
 
 Which plaform is it targeting? </br>
-I am developing using Windows, so that will be the top priority.
+I am developing using ~~Windows~~WSL, but it's targeting linux.
 
-# Current Progress:
-Jan 2019: Almost finished refactoring. (其实一直在摸也没改太多
-
-What's wrong with the Chinese edition of <i>Modern Compiler Implementation in C</i>? The translation is bullshit.
-There is a lot of problems which variable renaming, which I'll fix up later.
-I have to spend more time dealing with cs post right now.
