@@ -15,11 +15,9 @@
     <list default="true" id="80f7dc58-2422-43b6-b18d-fe55aa2ecf6e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/src/ast.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/ast.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/codegen.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/codegen.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/parse.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/parse.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sema.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/sema.cc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/codegen.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/codegen.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/registers.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/registers.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/type.cc" beforeDir="false" afterPath="$PROJECT_DIR$/src/type.cc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/type.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/type.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.c" beforeDir="false" afterPath="$PROJECT_DIR$/test.c" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/CMakeFiles/" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
@@ -39,17 +37,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/codegen.cc">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-82">
-              <caret line="529" column="13" selection-start-line="529" selection-start-column="13" selection-end-line="529" selection-end-column="13" />
+            <state relative-caret-position="-144">
+              <caret line="732" column="51" lean-forward="true" selection-start-line="732" selection-start-column="51" selection-end-line="732" selection-end-column="51" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/out.s">
+        <entry file="file://$PROJECT_DIR$/src/registers.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="714">
-              <caret line="628" column="19" lean-forward="true" selection-start-line="628" selection-start-column="19" selection-end-line="628" selection-end-column="19" />
+            <state relative-caret-position="210">
+              <caret line="20" column="54" selection-start-line="20" selection-start-column="50" selection-end-line="20" selection-end-column="54" />
             </state>
           </provider>
         </entry>
@@ -57,8 +55,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/codegen.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="87" column="13" lean-forward="true" selection-start-line="87" selection-start-column="13" selection-end-line="87" selection-end-column="13" />
+            <state relative-caret-position="107">
+              <caret line="89" column="53" selection-start-line="89" selection-start-column="53" selection-end-line="89" selection-end-column="53" />
               <folding>
                 <element signature="e#47#67#0" expanded="true" />
               </folding>
@@ -78,8 +76,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/sema.cc">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="158">
-              <caret line="359" column="13" selection-start-line="359" selection-start-column="13" selection-end-line="359" selection-end-column="13" />
+            <state relative-caret-position="225">
+              <caret line="329" column="28" lean-forward="true" selection-start-line="329" selection-start-column="28" selection-end-line="329" selection-end-column="28" />
               <folding>
                 <element signature="e#0#17#0" expanded="true" />
               </folding>
@@ -90,8 +88,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/ast.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="209">
-              <caret line="387" column="24" selection-start-line="387" selection-start-column="24" selection-end-line="387" selection-end-column="24" />
+            <state relative-caret-position="193">
+              <caret line="38" column="49" selection-start-line="38" selection-start-column="49" selection-end-line="38" selection-end-column="49" />
               <folding>
                 <element signature="e#98#114#0" expanded="true" />
               </folding>
@@ -120,20 +118,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/type.cc">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="72">
-              <caret line="141" column="35" selection-start-line="141" selection-start-column="35" selection-end-line="141" selection-end-column="35" />
+            <state relative-caret-position="482">
+              <caret line="138" column="46" selection-start-line="138" selection-start-column="46" selection-end-line="138" selection-end-column="46" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="94">
-              <caret line="139" column="17" selection-start-line="139" selection-start-column="17" selection-end-line="139" selection-end-column="17" />
+            <state relative-caret-position="390">
+              <caret line="143" column="127" lean-forward="true" selection-start-line="143" selection-start-column="127" selection-end-line="143" selection-end-column="127" />
             </state>
           </provider>
         </entry>
@@ -142,11 +140,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>unary oper</find>
-      <find>unary</find>
-      <find>MemberAccess</find>
-      <find>MemberAccessExpression *</find>
-      <find>no</find>
       <find>FuncDefArg</find>
       <find>FuncType</find>
       <find>parseExpr</find>
@@ -166,12 +159,17 @@
       <find>convertible</find>
       <find>array</find>
       <find>Identifier *</find>
-      <find>cannot de</find>
-      <find>ArrayType</find>
-      <find>BinaryExpression *</find>
       <find>error</find>
       <find>pa</find>
       <find>BinaryEx</find>
+      <find>tope</find>
+      <find>CalleX</find>
+      <find>cannot de</find>
+      <find>ArrayType</find>
+      <find>ftoi</find>
+      <find>BinaryExpression</find>
+      <find>BinaryExpression *</find>
+      <find>fop</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -187,11 +185,9 @@
         <option value="$PROJECT_DIR$/src/main.cc" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/c4.c" />
-        <option value="$PROJECT_DIR$/src/registers.h" />
         <option value="$PROJECT_DIR$/out.s" />
         <option value="$PROJECT_DIR$/brainfuck.c" />
         <option value="$PROJECT_DIR$/src/lex.cc" />
-        <option value="$PROJECT_DIR$/src/codegen.h" />
         <option value="$PROJECT_DIR$/src/sema.h" />
         <option value="$PROJECT_DIR$/src/kcc.h" />
         <option value="$PROJECT_DIR$/src/ast.cc" />
@@ -199,11 +195,13 @@
         <option value="$PROJECT_DIR$/src/parse.h" />
         <option value="$PROJECT_DIR$/src/type.hpp" />
         <option value="$PROJECT_DIR$/src/parse.cc" />
-        <option value="$PROJECT_DIR$/src/ast.h" />
-        <option value="$PROJECT_DIR$/src/type.cc" />
         <option value="$PROJECT_DIR$/src/sema.cc" />
-        <option value="$PROJECT_DIR$/src/codegen.cc" />
         <option value="$PROJECT_DIR$/test.c" />
+        <option value="$PROJECT_DIR$/src/registers.h" />
+        <option value="$PROJECT_DIR$/src/ast.h" />
+        <option value="$PROJECT_DIR$/src/codegen.h" />
+        <option value="$PROJECT_DIR$/src/codegen.cc" />
+        <option value="$PROJECT_DIR$/src/type.cc" />
       </list>
     </option>
   </component>
@@ -303,23 +301,23 @@
       <workItem from="1569262506713" duration="349000" />
       <workItem from="1569264695635" duration="6612000" />
       <workItem from="1569280091108" duration="10960000" />
-      <workItem from="1569292867027" duration="30050000" />
+      <workItem from="1569292867027" duration="33239000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="146062000" />
+    <option name="totallyTimeSpent" value="149251000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1295" height="735" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18997575" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18997575" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32928944" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.5129983" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.5129983" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.51473135" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -352,7 +350,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/registers.h</url>
-          <line>39</line>
+          <line>74</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -362,7 +360,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/src/codegen.cc</url>
-          <line>526</line>
+          <line>540</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>
       </breakpoints>
@@ -474,13 +472,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/registers.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="455">
-          <caret line="114" column="46" selection-start-line="114" selection-start-column="46" selection-end-line="114" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/brainfuck.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="96">
@@ -585,26 +576,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/ast.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="209">
-          <caret line="387" column="24" selection-start-line="387" selection-start-column="24" selection-end-line="387" selection-end-column="24" />
-          <folding>
-            <element signature="e#98#114#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/sema.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="158">
-          <caret line="359" column="13" selection-start-line="359" selection-start-column="13" selection-end-line="359" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#17#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/parse.cc">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="110">
@@ -612,13 +583,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/codegen.h">
+    <entry file="file://$PROJECT_DIR$/out.s">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="87" column="13" lean-forward="true" selection-start-line="87" selection-start-column="13" selection-end-line="87" selection-end-column="13" />
-          <folding>
-            <element signature="e#47#67#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="746">
+          <caret line="630" column="19" lean-forward="true" selection-start-line="630" selection-start-column="19" selection-end-line="630" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/kcc.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="80">
+          <caret line="25" selection-start-line="25" selection-end-line="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test.c">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="143" column="127" lean-forward="true" selection-start-line="143" selection-start-column="127" selection-end-line="143" selection-end-column="127" />
         </state>
       </provider>
     </entry>
@@ -632,38 +614,54 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/out.s">
+    <entry file="file://$PROJECT_DIR$/src/registers.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="714">
-          <caret line="628" column="19" lean-forward="true" selection-start-line="628" selection-start-column="19" selection-end-line="628" selection-end-column="19" />
+        <state relative-caret-position="210">
+          <caret line="20" column="54" selection-start-line="20" selection-start-column="50" selection-end-line="20" selection-end-column="54" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/kcc.h">
+    <entry file="file://$PROJECT_DIR$/src/ast.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="80">
-          <caret line="25" selection-start-line="25" selection-end-line="25" />
+        <state relative-caret-position="193">
+          <caret line="38" column="49" selection-start-line="38" selection-start-column="49" selection-end-line="38" selection-end-column="49" />
+          <folding>
+            <element signature="e#98#114#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/codegen.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="107">
+          <caret line="89" column="53" selection-start-line="89" selection-start-column="53" selection-end-line="89" selection-end-column="53" />
+          <folding>
+            <element signature="e#47#67#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/sema.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="329" column="28" lean-forward="true" selection-start-line="329" selection-start-column="28" selection-end-line="329" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/codegen.cc">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-82">
-          <caret line="529" column="13" selection-start-line="529" selection-start-column="13" selection-end-line="529" selection-end-column="13" />
+        <state relative-caret-position="-144">
+          <caret line="732" column="51" lean-forward="true" selection-start-line="732" selection-start-column="51" selection-end-line="732" selection-end-column="51" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/type.cc">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="141" column="35" selection-start-line="141" selection-start-column="35" selection-end-line="141" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test.c">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="94">
-          <caret line="139" column="17" selection-start-line="139" selection-start-column="17" selection-end-line="139" selection-end-column="17" />
+        <state relative-caret-position="482">
+          <caret line="138" column="46" selection-start-line="138" selection-start-column="46" selection-end-line="138" selection-end-column="46" />
         </state>
       </provider>
     </entry>

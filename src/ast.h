@@ -32,13 +32,22 @@ namespace kcc {
 
     struct Reg {
         bool isInt = true;
-        int index;
+        int index = -271828;
 
         bool isMachineReg() const {
             if (isInt) {
                 return index <= r15;
+            }else{
+                return  index <= mmx7;
             }
-            AssertThrow(false);
+        }
+
+        bool operator==(const Reg &r) const {
+            return r.isInt == isInt && r.index == index;
+        }
+
+        bool operator<(const Reg &r) const {
+            return r.isInt < isInt && r.index < index;
         }
     };
 
@@ -386,6 +395,7 @@ namespace kcc {
 
         public:
             int arrSize;
+
             explicit ArrayType(int size = -1) {
                 arrSize = size;
             }

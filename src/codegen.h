@@ -87,7 +87,7 @@ namespace kcc {
         // eax = eax op ebx
         void iop(const std::string &op, size_t size);
 
-        void fop(char op);
+        void fop(const std::string &op, size_t size);
 
         std::string genAddr(int i) {
             return fmt::format("-{}(%rbp)", i + currentFunction.reservedBytes);
@@ -98,6 +98,11 @@ namespace kcc {
         }
 
         Reg stackTopElement();
+
+        Reg stackTopElementF();
+
+        void ftoi(Reg&, int fSize, int iSize);
+        void itof(Reg&, int iSize, int fSize);
 
     public:
         void visit(AST::MemberAccessExpression *expression) override;

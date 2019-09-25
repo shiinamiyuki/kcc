@@ -16,9 +16,44 @@ namespace kcc {
         al = -128, dil, sil, dl, cl, spl, bpl, bl, r8b, r9b, r10b, r11b, r12b, r13b, r14b, r15b,
     };
     enum XmmRegister {
-        xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7
+        xmm0 = -128, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7,
+        xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14, xmm15,
+        mmx0, mmx1, mmx2, mmx3, mmx4, mmx5, mmx6, mmx7
+
     };
 #define REG_TO_STR(x) case x: return #x;
+
+    inline const char *toString(XmmRegister x) {
+        switch (x) {
+            REG_TO_STR(xmm0)
+            REG_TO_STR(xmm1)
+            REG_TO_STR(xmm2)
+            REG_TO_STR(xmm3)
+            REG_TO_STR(xmm4)
+            REG_TO_STR(xmm5)
+            REG_TO_STR(xmm6)
+            REG_TO_STR(xmm7)
+            REG_TO_STR(xmm8)
+            REG_TO_STR(xmm9)
+            REG_TO_STR(xmm10)
+            REG_TO_STR(xmm11)
+            REG_TO_STR(xmm12)
+            REG_TO_STR(xmm13)
+            REG_TO_STR(xmm14)
+            REG_TO_STR(xmm15)
+            REG_TO_STR(mmx0)
+            REG_TO_STR(mmx1)
+            REG_TO_STR(mmx2)
+            REG_TO_STR(mmx3)
+            REG_TO_STR(mmx4)
+            REG_TO_STR(mmx5)
+            REG_TO_STR(mmx6)
+            REG_TO_STR(mmx7)
+        }
+        AssertThrow(false);
+        return "unkown";
+    }
+
 
     inline const char *toString(Register x) {
         switch (x) {
@@ -109,12 +144,13 @@ namespace kcc {
             return toString((Register) x);
         } else if (size == 4) {
             return toString((Register32) x);
-        }  else if (size == 2) {
+        } else if (size == 2) {
             return toString((Register16) x);
-        }  else if (size == 1) {
+        } else if (size == 1) {
             return toString((Register8) x);
         }
         KCC_NOT_IMPLEMENTED();
     }
+
 }
 #endif //KCC_REGISTERS_H

@@ -129,16 +129,22 @@ namespace kcc {
                 return nullptr;
             }
             // now we have both int and float
-            if (left->isFloat()) {
-                return checkBinaryExpr(right, right, op);
-            } else {
-                return checkBinaryExpr(left, left, op);
+            if (comparisonOps.find(op) != comparisonOps.end()) {
+                return getPrimitiveTypes()[EInt];
             }
+            if (floatArithmeticOps.find(op) != floatArithmeticOps.end()) {
+                if (left->isFloat()) {
+                    return left;
+                }
+                AssertThrow(right->isFloat());
+                return right;
+            }
+            return nullptr;
         }
 
         IType *checkBinaryExpr(IType *left, IType *right, const std::string &op) {
             if (op == "=") {
-                if(left->isArray()){
+                if (left->isArray()) {
                     return nullptr;
                 }
                 if (convertible(right, left))

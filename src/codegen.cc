@@ -6,8 +6,11 @@ namespace kcc {
     std::set<Register> scratchRegisters = {rax, rdi, rsi, rdx, rcx, r8, r9, r10, r11};
     std::set<Register> functionPreservedRegisters = {rbx, r12, r13, r14, r15};
 
+    XmmRegister xmmTOSCA[] = {xmm8, xmm9, xmm11, xmm12, xmm13, xmm14, xmm15, mmx0};
     Register tosca[] = {rbx, rcx, r10, r11, r12, r13, r14, r15};
     Reg toscaTemp{true, rax};
+    Reg toscaTemp2{true, rdx};
+    Reg toscaTempF{false, mmx1};
     static constexpr size_t toscaN = sizeof(tosca) / sizeof(Register);
 
 
@@ -266,13 +269,17 @@ namespace kcc {
         auto callee = expression->callee();
         auto args = expression->arg();
 
-        std::set<Register> usedScratchRegisters;
+        std::set<Reg> usedScratchRegisters;
+
         for (const auto &r: stack) {
             if (r.isMachineReg()) {
-                usedScratchRegisters.insert((Register) r.index);
+                if (r.isInt && scratchRegisters.find((Register) r.index) != scratchRegisters.end())
+                    usedScratchRegisters.insert(r);
+                if (!r.isInt)
+                    usedScratchRegisters.insert(r);
             }
         }
-        std::vector<std::pair<Register, int>> savedRegisters;
+        std::vector<std::pair<Reg, int>> savedRegisters;
 
         //std::vector<Reg> _stack = stack;
         //stack.clear();
@@ -283,7 +290,11 @@ namespace kcc {
         if (!usedScratchRegisters.empty()) {
             for (auto reg: usedScratchRegisters) {
                 setSp(getSp() + 8);
-                emit("movq %{}, -{}(%rbp)", toString(reg), getSp());
+                if (reg.isInt) {
+                    emit("movq %{}, -{}(%rbp)", toString((Register) reg.index), getSp());
+                } else {
+                    emit("movss %{}, -{}(%rbp)", toString((XmmRegister) reg.index), getSp());
+                }
                 savedRegisters.emplace_back(reg, getSp());
             }
         }
@@ -340,7 +351,10 @@ namespace kcc {
             for (auto iter = savedRegisters.rbegin(); iter != savedRegisters.rend(); iter++) {
                 auto reg = iter->first;
                 auto addr = iter->second;
-                emit("movq -{}(%rbp), %{}", addr, toString(reg));
+                if (reg.isInt)
+                    emit("movq -{}(%rbp), %{}", addr, toString((Register) reg.index));
+                else
+                    emit("movss -{}(%rbp), %{}", addr, toString((XmmRegister) reg.index));
             }
         }
         setSp(_sp);
@@ -521,7 +535,7 @@ namespace kcc {
                 }
                 size = 8;
             }
-            if(ty->isPointer()) {
+            if (ty->isPointer()) {
                 auto p = cast<Type::PointerType *>(ty);
                 if (p->baseType()->isStruct()) {
                     debug("pointer to struct\n");
@@ -688,8 +702,61 @@ namespace kcc {
         }
     }
 
-    void CodeGenerator::fop(char op) {
+    void CodeGenerator::fop(const std::string &op, size_t size) {
+        AssertThrow(stack.size() >= 2);
+        auto top = pop();
+        auto &newTop = stack.back();
+        auto _rax = Reg{true, rax};
+        std::string suffix = size == 4 ? "ss" : "sd";
+        std::string opcode;
+        if (comparisonOps.find(op) != comparisonOps.end()) {
+            if (op == ">") {
+                opcode = "setg";
+            } else if (op == ">=") {
+                opcode = "setge";
+            } else if (op == "<") {
+                opcode = "setl";
+            } else if (op == "<=") {
+                opcode = "setle";
+            } else if (op == "==") {
+                opcode = "sete";
+            } else if (op == "!=") {
+                opcode = "setne";
+            }
 
+            emit("mov{} {}, {}", suffix, genReg(newTop, size), genReg(_rax, size));
+            emit("comiss{} {}, {}", suffix, genReg(top, size), genReg(_rax, size));
+            emit("{} %al", opcode);
+            emit("movzbq %al, %rax");
+            emit("mov{} {}, {}", suffix, genReg(_rax, size), genReg(newTop, size));
+
+        } else {
+            size_t sizeR = size;
+            if (op == "+") {
+                opcode = "add";
+            } else if (op == "-") {
+                opcode = "sub";
+            } else if (op == "*") {
+                opcode = "mul";
+            } else if (op == "/") {
+                opcode = "div";
+            } else {
+                AssertThrow(false);
+            }
+
+            // newTop = newTop op top
+            if (newTop.isMachineReg() && top.isMachineReg()) {
+                emit("{}{} {}, {}", opcode, suffix, genReg(top, sizeR), genReg(newTop, size));
+            } else if (newTop.isMachineReg() && !top.isMachineReg()) {
+                emit("{}{} {}, {}", opcode, suffix, genReg(top, sizeR), genReg(newTop, size));
+            } else if (!newTop.isMachineReg() && !top.isMachineReg()) {
+                emit("mov{} {}, {}", suffix, genReg(newTop, size), genReg(toscaTempF, size));
+                emit("{}{} {}, {}", opcode, suffix, genReg(top, sizeR), genReg(toscaTempF, size));
+                emit("mov{} {}, {}", suffix, genReg(toscaTempF, size), genReg(newTop, size));
+            } else {
+                KCC_NOT_IMPLEMENTED();
+            }
+        }
     }
 
     std::string CodeGenerator::genReg(const Reg &r, size_t size) {
@@ -711,7 +778,12 @@ namespace kcc {
                 return fmt::format("-{}(%rbp)", r.index);
             }
         } else {
-            KCC_NOT_IMPLEMENTED();
+            if (r.isMachineReg()) {
+                return fmt::format("%{}", toString((XmmRegister) r.index));
+            } else {
+                AssertThrow(r.index >= 0);
+                return fmt::format("-{}(%rbp)", r.index);
+            }
         }
     }
 
@@ -720,6 +792,14 @@ namespace kcc {
             return Reg{true, tosca[stack.size()]};
         } else {
             return Reg{true, int((1 + stack.size() - toscaN) * 8 + getSp())};
+        }
+    }
+
+    Reg CodeGenerator::stackTopElementF() {
+        if (stack.size() < toscaN) {
+            return Reg{false, tosca[stack.size()]};
+        } else {
+            return Reg{false, int((1 + stack.size() - toscaN) * 8 + getSp())};
         }
     }
 
@@ -877,6 +957,53 @@ namespace kcc {
             push("mov", fmt::format("{}(%rax)", offset), ty->size());
         } else {
             push("lea", fmt::format("{}(%rax)", offset), 8);
+        }
+    }
+
+    void CodeGenerator::ftoi(Reg &reg, int fSize, int iSize) {
+        if (reg.isMachineReg()) {
+            auto old = reg;
+            reg.isInt = true;
+            iSize = std::max(iSize, 4);
+            if (fSize == 4)
+                emit("cvttss2sil {}, {}", genReg(old, fSize), genReg(reg, iSize));
+            else {
+                AssertThrow(fSize == 8);
+                emit("cvttsd2sil {}, {}", genReg(old, fSize), genReg(reg, iSize));
+            }
+        } else {
+            emit("movss {}, {}", genReg(reg, fSize), genReg(toscaTempF, fSize));
+            iSize = std::max(iSize, 4);
+            reg.isInt = true;
+            if (fSize == 4)
+                emit("cvttss2sil {}, {}", genReg(toscaTempF, fSize), genReg(reg, iSize));
+            else {
+                AssertThrow(fSize == 8);
+                emit("cvttsd2sil {}, {}", genReg(toscaTempF, fSize), genReg(reg, iSize));
+            }
+        }
+    }
+
+    void CodeGenerator::itof(Reg &reg, int iSize, int fSize) {
+        if (reg.isMachineReg()) {
+            auto old = reg;
+            reg.isInt = false;
+            iSize = std::max(iSize, 4);
+            if (fSize == 4)
+                emit("cvttsi2ssl {}, {}", genReg(old, iSize), genReg(reg, fSize));
+            else {
+                AssertThrow(fSize == 8);
+                emit("cvttsi2sdl {}, {}", genReg(old, iSize), genReg(reg, fSize));
+            }
+        } else {
+            if (fSize == 4)
+                emit("cvttsi2ssl {}, {}", genReg(reg, iSize), genReg(toscaTempF, fSize));
+            else {
+                AssertThrow(fSize == 8);
+                emit("cvttsi2sdl {}, {}", genReg(reg, iSize), genReg(toscaTempF, fSize));
+            }
+            reg.isInt = false;
+            emit("movss {}, {}", genReg(toscaTempF, fSize), genReg(reg, fSize));
         }
     }
 
