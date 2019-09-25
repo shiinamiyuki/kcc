@@ -126,8 +126,18 @@ int main(int argc, char **argv) {
     struct A *pa;
     pa = &a;
     printf("pa->a=%d, pa->b=%d\n", pa->a, pa->b);
+    printf("pa->a=%d, pa->b=%d\n", (*pa).a, (*pa).b);
     struct Node *node = createNode(123);
     printf("node->value=%d\n", node->value);
+
+    int arr[10][10];
+    for(int i =0;i<10;i++){
+        for(int j = 0;j<10;j++){
+            arr[i][j] = i + j;
+            printf("%d ",arr[i][j]);
+        }
+    }
+    printf("\n");
 }
 
 

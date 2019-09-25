@@ -235,7 +235,7 @@ namespace kcc {
             }
 
             std::string toString() const override {
-                return format("{} [{}}", _baseType->toString(), _length);
+                return format("{} [{}]", _baseType->toString(), _length);
             }
 
             bool isFunction() const override {

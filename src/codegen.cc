@@ -12,7 +12,7 @@ namespace kcc {
 
 
     void CodeGenerator::visit(AST::Identifier *identifier) {
-        if (identifier->type()->isStruct()) {
+        if (identifier->type()->isStruct() || identifier->type()->isArray()) {
             LValueEvaluator evaluator(*this);
             identifier->accept(&evaluator);
             push("lea", evaluator.stack.back(), 8);
@@ -453,8 +453,11 @@ namespace kcc {
                     emit("movq %rax, {}", genReg(r, 8));
                 }
             }
-
-            iop(expression->tok(), size);
+            if (left->type()->isArray() || right->type()->isArray()) {
+                iop(expression->tok(), 8);
+            } else {
+                iop(expression->tok(), size);
+            }
         } else {
             size = left->type()->size();
             LValueEvaluator evaluator(*this);
@@ -509,7 +512,24 @@ namespace kcc {
             expression->first()->accept(this);
             auto &top = stack.back();
             auto size = cast<AST::Expression *>(expression->first())->type()->size();
+            auto ty = cast<AST::Expression *>(expression->first())->type();
+            if (ty->isArray()) {
+                if (expression->type()->isArray()) {
+
+                    return;
+
+                }
+                size = 8;
+            }
+            if(ty->isPointer()) {
+                auto p = cast<Type::PointerType *>(ty);
+                if (p->baseType()->isStruct()) {
+                    debug("pointer to struct\n");
+                    return;
+                }
+            }
             AssertThrow(size == 8);
+
             auto suffix = getSuffix(size);
             if (top.isMachineReg()) {
                 emit("mov{} ({}), {}", suffix, genReg(top, 8), genReg(top, size));
@@ -518,6 +538,7 @@ namespace kcc {
                 emit("movq (%rax),%rax", genReg(top, 8));
                 emit("movq %rax, {}", genReg(top, 8));
             }
+
         } else if (op == "++") {
             LValueEvaluator evaluator(*this);
             expression->first()->accept(&evaluator);

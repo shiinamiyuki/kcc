@@ -383,8 +383,9 @@ namespace kcc {
         };
 
         class ArrayType : public TypeDeclaration {
-            int arrSize;
+
         public:
+            int arrSize;
             explicit ArrayType(int size = -1) {
                 arrSize = size;
             }

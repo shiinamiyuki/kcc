@@ -119,7 +119,12 @@ namespace kcc {
         type->type = new Type::PointerType(baseType->type);
     }
 
-    void Sema::visit(AST::ArrayType *) {
+    void Sema::visit(AST::ArrayType *arrayType) {
+        auto size = arrayType->arrSize;
+        auto base = cast<AST::TypeDeclaration *>(arrayType->first());
+        base->accept(this);
+        auto ty = new Type::ArrayType(base->type, size);
+        arrayType->type = ty;
     }
 
     void Sema::visit(AST::ArgumentExepressionList *) {
@@ -344,11 +349,14 @@ namespace kcc {
         expr->expr()->accept(this);
         auto ty = expr->expr()->type();
         if (expr->tok() == "*") {
-
-            if (!ty->isPointer()) {
-                error(format("cannot dereference type {}", ty->toString()));
+            if (ty->isArray()) {
+                expr->type() = cast<Type::ArrayType *>(ty)->baseType();
             } else {
-                expr->type() = cast<Type::PointerType *>(ty)->baseType();
+                if (!ty->isPointer()) {
+                    error(format("cannot dereference type {}", ty->toString()));
+                } else {
+                    expr->type() = cast<Type::PointerType *>(ty)->baseType();
+                }
             }
         } else if (expr->tok() == "&") {
             LValueChecker checker(this);

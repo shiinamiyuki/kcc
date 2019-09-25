@@ -631,8 +631,7 @@ void Parser::parseArrayDeclarator() {
         if (size->kind() != "Number") {
             error("integer expected in array declaration");
         }
-        int i;
-        sscanf(size->getToken().tok.c_str(), "%d", &i);
+        int i = std::stol(size->tok());
         arr = makeNode<AST::ArrayType>(i);
         if (i < 0) {
             error("none-negative integer expected in array declaration");
